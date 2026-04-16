@@ -2,7 +2,7 @@ module github.com/DeepakDP5/zee6do-server
 
 go 1.23.0
 
-toolchain go1.25.9
+toolchain go1.26.2
 
 require (
 	github.com/google/wire v0.7.0
