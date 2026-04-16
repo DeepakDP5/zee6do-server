@@ -1,58 +1,72 @@
+version: "2"
 run:
-  timeout: 5m
   modules-download-mode: readonly
-
 linters:
   enable:
-    - govet
-    - errcheck
-    - staticcheck
-    - gosec
-    - revive
     - exhaustive
     - gocritic
-
-linters-settings:
-  exhaustive:
-    default-signifies-exhaustive: true
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - style
-      - performance
-  revive:
+    - gosec
+    - revive
+  settings:
+    exhaustive:
+      default-signifies-exhaustive: true
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
+    gosec:
+      excludes:
+        - G104
+    revive:
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: dot-imports
+        - name: error-naming
+        - name: error-return
+        - name: exported
+        - name: if-return
+        - name: increment-decrement
+        - name: var-naming
+        - name: package-comments
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: indent-error-flow
+        - name: errorf
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
-      - name: blank-imports
-      - name: context-as-argument
-      - name: dot-imports
-      - name: error-naming
-      - name: error-return
-      - name: exported
-      - name: if-return
-      - name: increment-decrement
-      - name: var-naming
-      - name: package-comments
-      - name: range
-      - name: receiver-naming
-      - name: time-naming
-      - name: unexported-return
-      - name: indent-error-flow
-      - name: errorf
-  gosec:
-    excludes:
-      - G104 # duplicate of errcheck
-
-issues:
-  exclude-rules:
-    # Test files can have longer functions
-    - path: _test\.go
-      linters:
-        - gocritic
-    # Wire injector files use special patterns
-    - path: wire\.go
-      linters:
-        - gocritic
-    - path: wire_gen\.go
-      linters:
-        - gocritic
-        - revive
+      - linters:
+          - gocritic
+        path: _test\.go
+      - linters:
+          - gocritic
+        path: wire\.go
+      - linters:
+          - gocritic
+          - revive
+        path: wire_gen\.go
+      # pkg/errors intentionally shadows the stdlib errors package (common Go pattern)
+      - linters:
+          - revive
+        path: pkg/errors/
+        text: "avoid package names that conflict with Go standard library"
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

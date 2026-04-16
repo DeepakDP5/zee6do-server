@@ -114,6 +114,15 @@ func TestLoad_panics_on_invalid_port(t *testing.T) {
 	}, "should panic when port is 0")
 }
 
+func TestLoad_panics_on_port_above_65535(t *testing.T) {
+	t.Setenv("ZEE6DO_MONGODB_URI", "mongodb://localhost:27017")
+	t.Setenv("ZEE6DO_SERVER_GRPC_PORT", "70000")
+
+	assert.Panics(t, func() {
+		LoadFromEnv()
+	}, "should panic when port exceeds 65535")
+}
+
 func TestLoad_panics_on_invalid_environment(t *testing.T) {
 	t.Setenv("ZEE6DO_MONGODB_URI", "mongodb://localhost:27017")
 	t.Setenv("ZEE6DO_SERVER_ENVIRONMENT", "invalid_env")
