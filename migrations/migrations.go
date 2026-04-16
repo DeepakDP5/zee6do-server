@@ -9,6 +9,7 @@ package migrations
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/DeepakDP5/zee6do-server/internal/database"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -32,7 +33,7 @@ func migrateCreateInitialIndexes(ctx context.Context, db *mongo.Database) error 
 		Options: options.Index().SetUnique(true),
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("create users.user_id unique index: %w", err)
 	}
 
 	// Tasks collection: compound index for user task queries
@@ -44,7 +45,7 @@ func migrateCreateInitialIndexes(ctx context.Context, db *mongo.Database) error 
 		},
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("create tasks compound index: %w", err)
 	}
 
 	return nil

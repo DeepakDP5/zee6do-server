@@ -477,7 +477,7 @@ Server-side feature flag management:
 |---|---|---|
 | **Crash reporting** | Sentry | Server panic recovery and error tracking |
 | **APM** | Datadog or AWS X-Ray | Request tracing, latency analysis, dependency mapping |
-| **Structured logging** | zerolog or zap | JSON-structured logs with correlation IDs |
+| **Structured logging** | Uber Zap | JSON-structured logs with correlation IDs |
 | **Metrics** | Prometheus + Grafana (or CloudWatch) | Request rates, error rates, AI latency, sync throughput, WebSocket connections |
 | **Uptime monitoring** | AWS CloudWatch Alarms or Pingdom | Health check endpoints, alerting on downtime |
 | **AI cost tracking** | Custom metrics | Per-user LLM token usage, cost per AI operation, throttling trigger rates |
@@ -570,46 +570,47 @@ Push to branch
 
 ## Repository Structure
 
+> **Note:** Directories marked with `*` are planned but not yet created. The current scaffold includes `cmd/server/`, `internal/database/`, `internal/server/`, `pkg/config/`, `pkg/errors/`, `pkg/logging/`, `migrations/`, and `docs/`.
+
 ```
 zee6do-server/
   cmd/
     server/               # Main entry point, server bootstrap
   internal/
-    auth/                 # Authentication module (OTP, social, JWT, device binding)
-    tasks/                # Task CRUD, status management, search
-    ai/                   # AI orchestration, LLM provider abstraction, prompt management
-      providers/          # OpenAI, Anthropic, Google adapters
-    scheduler/            # Smart scheduling engine, conflict resolution
-    connectors/           # Connector integrations
-      google_calendar/
-      slack/
-      email/
-      clickup/
-    knowledge/            # Personal knowledge base, embeddings, semantic search
-    notifications/        # Push notification delivery, smart timing
-    realtime/             # WebSocket server, event broadcasting
-    analytics/            # Metrics computation, AI narrative generation
-    storage/              # AWS S3 integration, pre-signed URLs
-    billing/              # Receipt verification, subscription management
-    sync/                 # Offline sync protocol, conflict resolution
-    users/                # Profile management, data export, account deletion
-    flags/                # Feature flag management
+    database/             # MongoDB connection management, migrations
+    server/               # Server lifecycle (health check, shutdown)
+    auth/                 # * Authentication module (OTP, social, JWT, device binding)
+    tasks/                # * Task CRUD, status management, search
+    ai/                   # * AI orchestration, LLM provider abstraction, prompt management
+      providers/          # * OpenAI, Anthropic, Google adapters
+    scheduler/            # * Smart scheduling engine, conflict resolution
+    connectors/           # * Connector integrations
+      google_calendar/    # *
+      slack/              # *
+      email/              # *
+      clickup/            # *
+    knowledge/            # * Personal knowledge base, embeddings, semantic search
+    notifications/        # * Push notification delivery, smart timing
+    realtime/             # * WebSocket server, event broadcasting
+    analytics/            # * Metrics computation, AI narrative generation
+    storage/              # * AWS S3 integration, pre-signed URLs
+    billing/              # * Receipt verification, subscription management
+    sync/                 # * Offline sync protocol, conflict resolution
+    users/                # * Profile management, data export, account deletion
+    flags/                # * Feature flag management
   pkg/
-    middleware/           # Auth middleware, logging, rate limiting
-    crypto/               # Encryption utilities, device fingerprint validation
     config/               # Configuration loading (env, files, secrets)
-    errors/               # Error types and handling
-  proto/
-    zee6do/               # Protocol Buffer definitions for all gRPC services
+    errors/               # Sentinel errors and wrapping utilities
+    logging/              # Structured JSON logging via Uber Zap
+    middleware/           # * Auth middleware, logging, rate limiting
+    crypto/               # * Encryption utilities, device fingerprint validation
+  proto/                  # * Protocol Buffer definitions for all gRPC services
+    zee6do/               # *
   migrations/             # MongoDB index and schema migration scripts
-  deployments/
-    docker/               # Dockerfile, docker-compose for local dev
-    k8s/ or ecs/          # Deployment manifests
-  scripts/                # Build, test, deployment helper scripts
-  docs/                   # API documentation, architecture decision records
+  docs/                   # Architecture decision records and documentation
   go.mod
   go.sum
-  Makefile
+  docker-compose.yml      # Local development MongoDB
   README.md
 ```
 
