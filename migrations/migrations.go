@@ -45,7 +45,7 @@ func migrateCreateInitialIndexes(ctx context.Context, db *mongo.Database) error 
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("create tasks compound index: %w", err)
+		return fmt.Errorf("create tasks.(user_id,status,priority) compound index: %w", err)
 	}
 
 	return nil
