@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+// AnalyticsService provides productivity metrics, time analysis, and AI-generated narratives.
+service AnalyticsService {
+  // GetMetrics returns completion stats, streaks, and trend data for a date range.
+  rpc GetMetrics(GetMetricsRequest) returns (GetMetricsResponse);
+  // GetTimeBreakdown returns time analysis per category/project.
+  rpc GetTimeBreakdown(GetTimeBreakdownRequest) returns (GetTimeBreakdownResponse);
+  // GetAINarrative generates a natural language summary of productivity data.
+  rpc GetAINarrative(GetAINarrativeRequest) returns (GetAINarrativeResponse);
+}
+
+// Date range for analytics queries.
+message DateRange {
+  // Start of the range (inclusive).
+  google.protobuf.Timestamp start = 1 [(buf.validate.field).required = true];
+  // End of the range (inclusive).
+  google.protobuf.Timestamp end = 2 [(buf.validate.field).required = true];
+}
+
+message GetMetricsRequest {
+  // Date range to compute metrics for.
+  DateRange date_range = 1 [(buf.validate.field).required = true];
+}
+
+message GetMetricsResponse {
+  // Task completion rate (0.0 to 1.0) over the period.
+  float completion_rate = 1;
+  // Current streak of consecutive productive days.
+  int32 streak_days = 2;
+  // Total tasks created in the period.
+  int32 tasks_created = 3;
+  // Total tasks completed in the period.
+  int32 tasks_completed = 4;
+  // Total overdue tasks at end of period.
+  int32 tasks_overdue = 5;
+  // Daily trend data points.
+  repeated DailyMetrics daily_metrics = 6;
+}
+
+// Metrics for a single day.
+message DailyMetrics {
+  // The date this data represents.
+  google.protobuf.Timestamp date = 1;
+  // Tasks created on this day.
+  int32 tasks_created = 2;
+  // Tasks completed on this day.
+  int32 tasks_completed = 3;
+  // Tasks overdue at end of day.
+  int32 tasks_overdue = 4;
+  // Productive hours (based on task activity).
+  float productive_hours = 5;
+}
+
+message GetTimeBreakdownRequest {
+  // Date range to analyze.
+  DateRange date_range = 1 [(buf.validate.field).required = true];
+}
+
+message GetTimeBreakdownResponse {
+  // Time distribution by category.
+  repeated CategoryTime category_distribution = 1;
+  // Hourly activity heatmap (24 entries, one per hour).
+  repeated HourlyActivity hourly_heatmap = 2;
+  // Focus time vs. fragmented time ratio.
+  float focus_ratio = 3;
+  // Total productive hours.
+  float total_productive_hours = 4;
+}
+
+// Time spent per category.
+message CategoryTime {
+  // Category name.
+  string category = 1;
+  // Minutes spent on tasks in this category.
+  int32 minutes = 2;
+  // Percentage of total time.
+  float percentage = 3;
+}
+
+// Activity level for a specific hour of the day.
+message HourlyActivity {
+  // Hour of day (0-23).
+  int32 hour = 1;
+  // Average task completions during this hour.
+  float activity_level = 2;
+}
+
+message GetAINarrativeRequest {
+  // Date range to narrate.
+  DateRange date_range = 1 [(buf.validate.field).required = true];
+  // Optional question to guide the narrative (e.g., "How was my productivity last month?").
+  string question = 2;
+}
+
+message GetAINarrativeResponse {
+  // AI-generated natural language summary of productivity.
+  string narrative = 1;
+  // Key highlights extracted from the data.
+  repeated string highlights = 2;
+  // Actionable recommendations.
+  repeated string recommendations = 3;
+}

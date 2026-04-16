@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "zee6do/v1/task_service.proto";
+
+// SchedulerService manages the AI-powered agenda view, task rescheduling, and conflict resolution.
+service SchedulerService {
+  // GetAgendaView returns an AI-generated optimal sequence of tasks and events for a date range.
+  rpc GetAgendaView(GetAgendaViewRequest) returns (GetAgendaViewResponse);
+  // RescheduleTask moves a task to a new date and recalculates dependencies.
+  rpc RescheduleTask(RescheduleTaskRequest) returns (RescheduleTaskResponse);
+  // ResolveConflict resolves a scheduling conflict between a task and a calendar event.
+  rpc ResolveConflict(ResolveConflictRequest) returns (ResolveConflictResponse);
+}
+
+message GetAgendaViewRequest {
+  // Start of the date range.
+  google.protobuf.Timestamp start = 1 [(buf.validate.field).required = true];
+  // End of the date range.
+  google.protobuf.Timestamp end = 2 [(buf.validate.field).required = true];
+}
+
+message GetAgendaViewResponse {
+  // Ordered list of agenda items (tasks + calendar events interleaved).
+  repeated AgendaItem items = 1;
+}
+
+// A single item in the agenda view.
+message AgendaItem {
+  // Type of agenda item.
+  AgendaItemType type = 1;
+  // Task data (populated if type is TASK).
+  Task task = 2;
+  // Calendar event data (populated if type is CALENDAR_EVENT).
+  CalendarEvent event = 3;
+  // Suggested start time.
+  google.protobuf.Timestamp start_time = 4;
+  // Suggested end time.
+  google.protobuf.Timestamp end_time = 5;
+  // AI reasoning for this placement.
+  string reasoning = 6;
+}
+
+// Type of agenda item.
+enum AgendaItemType {
+  AGENDA_ITEM_TYPE_UNSPECIFIED = 0;
+  AGENDA_ITEM_TYPE_TASK = 1;
+  AGENDA_ITEM_TYPE_CALENDAR_EVENT = 2;
+}
+
+// A calendar event from a connected calendar.
+message CalendarEvent {
+  // External event ID.
+  string id = 1;
+  // Event title.
+  string title = 2;
+  // Event start time.
+  google.protobuf.Timestamp start_time = 3;
+  // Event end time.
+  google.protobuf.Timestamp end_time = 4;
+  // Whether this is an all-day event.
+  bool all_day = 5;
+  // Source calendar name.
+  string calendar_name = 6;
+}
+
+message RescheduleTaskRequest {
+  // Task ID to reschedule.
+  string task_id = 1 [(buf.validate.field).string.min_len = 1];
+  // New scheduled date for the task.
+  google.protobuf.Timestamp new_date = 2 [(buf.validate.field).required = true];
+}
+
+message RescheduleTaskResponse {
+  // Updated task with new scheduled date.
+  Task task = 1;
+}
+
+message ResolveConflictRequest {
+  // Conflict ID to resolve.
+  string conflict_id = 1 [(buf.validate.field).string.min_len = 1];
+  // Chosen resolution.
+  ScheduleConflictResolution resolution = 2 [(buf.validate.field).enum = {
+    defined_only: true,
+    not_in: [0]
+  }];
+}
+
+message ResolveConflictResponse {}
+
+// Resolution strategy for scheduling conflicts.
+enum ScheduleConflictResolution {
+  SCHEDULE_CONFLICT_RESOLUTION_UNSPECIFIED = 0;
+  // Keep the task at its current time (event takes precedence visually).
+  SCHEDULE_CONFLICT_RESOLUTION_KEEP_TASK = 1;
+  // Reschedule the task to the next available slot.
+  SCHEDULE_CONFLICT_RESOLUTION_RESCHEDULE_TASK = 2;
+  // Let AI determine the best resolution.
+  SCHEDULE_CONFLICT_RESOLUTION_AI_DECIDE = 3;
+}

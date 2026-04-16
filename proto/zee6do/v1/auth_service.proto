@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+// AuthService handles authentication, OTP verification, social login, and session management.
+service AuthService {
+  // SendOTP sends a one-time password to the given phone number.
+  rpc SendOTP(SendOTPRequest) returns (SendOTPResponse);
+  // VerifyOTP validates the OTP code and issues JWT tokens.
+  rpc VerifyOTP(VerifyOTPRequest) returns (VerifyOTPResponse);
+  // SocialLogin authenticates via Google or Apple ID token and issues JWT tokens.
+  rpc SocialLogin(SocialLoginRequest) returns (SocialLoginResponse);
+  // RefreshToken exchanges a valid refresh token for a new token pair.
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  // ListDevices returns all active sessions/devices for the authenticated user.
+  rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
+  // RevokeDevice revokes a specific device session.
+  rpc RevokeDevice(RevokeDeviceRequest) returns (RevokeDeviceResponse);
+  // Logout revokes the current session.
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+}
+
+// Social login provider type.
+enum SocialProvider {
+  SOCIAL_PROVIDER_UNSPECIFIED = 0;
+  SOCIAL_PROVIDER_GOOGLE = 1;
+  SOCIAL_PROVIDER_APPLE = 2;
+}
+
+message SendOTPRequest {
+  // Phone number in E.164 format (e.g., "+14155552671").
+  string phone_number = 1 [(buf.validate.field).string.min_len = 8];
+}
+
+message SendOTPResponse {
+  // Opaque identifier for this OTP session.
+  string otp_id = 1;
+  // When the OTP expires.
+  google.protobuf.Timestamp expires_at = 2;
+}
+
+message VerifyOTPRequest {
+  // OTP session identifier returned by SendOTP.
+  string otp_id = 1 [(buf.validate.field).string.min_len = 1];
+  // The 6-digit OTP code entered by the user.
+  string code = 2 [(buf.validate.field).string.len = 6];
+  // Unique device fingerprint for session binding.
+  string device_fingerprint = 3 [(buf.validate.field).string.min_len = 1];
+}
+
+message VerifyOTPResponse {
+  // Short-lived access token (JWT).
+  string access_token = 1;
+  // Long-lived refresh token for obtaining new access tokens.
+  string refresh_token = 2;
+  // The authenticated user profile.
+  User user = 3;
+}
+
+message SocialLoginRequest {
+  // Social login provider.
+  SocialProvider provider = 1 [(buf.validate.field).enum = {
+    defined_only: true,
+    not_in: [0]
+  }];
+  // ID token from the social provider (Google/Apple).
+  string id_token = 2 [(buf.validate.field).string.min_len = 1];
+  // Unique device fingerprint for session binding.
+  string device_fingerprint = 3 [(buf.validate.field).string.min_len = 1];
+}
+
+message SocialLoginResponse {
+  // Short-lived access token (JWT).
+  string access_token = 1;
+  // Long-lived refresh token.
+  string refresh_token = 2;
+  // The authenticated user profile.
+  User user = 3;
+}
+
+message RefreshTokenRequest {
+  // The refresh token to exchange.
+  string refresh_token = 1 [(buf.validate.field).string.min_len = 1];
+  // Device fingerprint must match the one used during login.
+  string device_fingerprint = 2 [(buf.validate.field).string.min_len = 1];
+}
+
+message RefreshTokenResponse {
+  // New short-lived access token.
+  string access_token = 1;
+  // New refresh token (old one is invalidated).
+  string refresh_token = 2;
+}
+
+message ListDevicesRequest {}
+
+message ListDevicesResponse {
+  repeated Device devices = 1;
+}
+
+message RevokeDeviceRequest {
+  // ID of the device session to revoke.
+  string device_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message RevokeDeviceResponse {}
+
+message LogoutRequest {}
+
+message LogoutResponse {}
+
+// Device represents an active session/device.
+message Device {
+  // Unique device session identifier.
+  string id = 1;
+  // Human-readable device name or type.
+  string name = 2;
+  // When this session was created.
+  google.protobuf.Timestamp created_at = 3;
+  // When this session was last active.
+  google.protobuf.Timestamp last_active_at = 4;
+  // Whether this is the current device making the request.
+  bool is_current = 5;
+}
+
+// User profile returned in auth responses. Minimal representation.
+message User {
+  // Unique user identifier.
+  string id = 1;
+  // Phone number (E.164 format).
+  string phone = 2;
+  // Email address (optional).
+  string email = 3;
+  // Display name.
+  string name = 4;
+  // Avatar image URL.
+  string avatar_url = 5;
+  // When the account was created.
+  google.protobuf.Timestamp created_at = 6;
+}

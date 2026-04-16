@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "zee6do/v1/common.proto";
+
+// KnowledgeService manages the personal knowledge base: adding, searching, listing, and deleting documents.
+service KnowledgeService {
+  // AddDocument adds a document to the knowledge base.
+  rpc AddDocument(AddDocumentRequest) returns (AddDocumentResponse);
+  // SearchKnowledge performs semantic search across the knowledge base.
+  rpc SearchKnowledge(SearchKnowledgeRequest) returns (SearchKnowledgeResponse);
+  // ListDocuments returns a paginated list of knowledge base documents.
+  rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse);
+  // DeleteDocument removes a document from the knowledge base.
+  rpc DeleteDocument(DeleteDocumentRequest) returns (DeleteDocumentResponse);
+}
+
+// Source type for a knowledge base document.
+enum KnowledgeSourceType {
+  KNOWLEDGE_SOURCE_TYPE_UNSPECIFIED = 0;
+  KNOWLEDGE_SOURCE_TYPE_MANUAL = 1;
+  KNOWLEDGE_SOURCE_TYPE_SLACK = 2;
+  KNOWLEDGE_SOURCE_TYPE_EMAIL = 3;
+  KNOWLEDGE_SOURCE_TYPE_CLICKUP = 4;
+  KNOWLEDGE_SOURCE_TYPE_WEB = 5;
+}
+
+message AddDocumentRequest {
+  // Document title.
+  string title = 1 [(buf.validate.field).string.min_len = 1];
+  // Document content (plain text or markdown).
+  string content = 2 [(buf.validate.field).string.min_len = 1];
+  // How this document was sourced.
+  KnowledgeSourceType source_type = 3;
+}
+
+message AddDocumentResponse {
+  // The newly created document.
+  KnowledgeDocument document = 1;
+}
+
+message SearchKnowledgeRequest {
+  // Natural language search query.
+  string query = 1 [(buf.validate.field).string.min_len = 1];
+  // Maximum number of results to return.
+  int32 limit = 2;
+}
+
+message SearchKnowledgeResponse {
+  // Search results ranked by relevance.
+  repeated KnowledgeSearchResult results = 1;
+}
+
+message ListDocumentsRequest {
+  // Pagination parameters.
+  Pagination pagination = 1;
+}
+
+message ListDocumentsResponse {
+  // Documents in the knowledge base.
+  repeated KnowledgeDocument documents = 1;
+  // Pagination metadata.
+  PaginatedResponse pagination = 2;
+}
+
+message DeleteDocumentRequest {
+  // Document ID to delete.
+  string document_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message DeleteDocumentResponse {}
+
+// A document in the personal knowledge base.
+message KnowledgeDocument {
+  // Unique document identifier.
+  string id = 1;
+  // Document title.
+  string title = 2;
+  // Document content (plain text or markdown).
+  string content = 3;
+  // How this document was sourced.
+  KnowledgeSourceType source_type = 4;
+  // Reference to the original source (e.g., Slack message URL, email ID).
+  string source_ref = 5;
+  // When the document was added.
+  google.protobuf.Timestamp created_at = 6;
+  // When the document was last updated.
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+// A search result from the knowledge base.
+message KnowledgeSearchResult {
+  // The matched document.
+  KnowledgeDocument document = 1;
+  // The most relevant excerpt from the document.
+  string excerpt = 2;
+  // Relevance score (0.0 to 1.0).
+  float relevance_score = 3;
+}

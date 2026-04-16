@@ -1,0 +1,111 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "zee6do/v1/common.proto";
+
+// ConnectorService manages third-party integration connections and sync.
+service ConnectorService {
+  // LinkConnector initiates or completes linking a connector via OAuth.
+  rpc LinkConnector(LinkConnectorRequest) returns (LinkConnectorResponse);
+  // UnlinkConnector disconnects a linked connector.
+  rpc UnlinkConnector(UnlinkConnectorRequest) returns (UnlinkConnectorResponse);
+  // SyncNow triggers an immediate sync for a connector.
+  rpc SyncNow(SyncNowRequest) returns (SyncNowResponse);
+  // GetSyncStatus returns the current sync status of a connector.
+  rpc GetSyncStatus(GetSyncStatusRequest) returns (GetSyncStatusResponse);
+  // ListConnectors returns all connectors and their statuses for the user.
+  rpc ListConnectors(ListConnectorsRequest) returns (ListConnectorsResponse);
+}
+
+message LinkConnectorRequest {
+  // Type of connector to link.
+  ConnectorType connector_type = 1 [(buf.validate.field).enum = {
+    defined_only: true,
+    not_in: [0]
+  }];
+  // OAuth authorization code from the provider's redirect.
+  string oauth_code = 2 [(buf.validate.field).string.min_len = 1];
+  // OAuth redirect URI used in the authorization request.
+  string redirect_uri = 3;
+}
+
+message LinkConnectorResponse {
+  // Status of the newly linked connector.
+  ConnectorStatus status = 1;
+}
+
+message UnlinkConnectorRequest {
+  // ID of the connector to unlink.
+  string connector_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message UnlinkConnectorResponse {}
+
+message SyncNowRequest {
+  // ID of the connector to sync.
+  string connector_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message SyncNowResponse {
+  // Result of the sync operation.
+  SyncResult result = 1;
+}
+
+message GetSyncStatusRequest {
+  // ID of the connector.
+  string connector_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetSyncStatusResponse {
+  // Current connector status.
+  ConnectorStatus status = 1;
+}
+
+message ListConnectorsRequest {}
+
+message ListConnectorsResponse {
+  // All connectors for the user.
+  repeated ConnectorStatus connectors = 1;
+}
+
+// Status of a connector integration.
+message ConnectorStatus {
+  // Unique connector instance ID.
+  string id = 1;
+  // Connector type.
+  ConnectorType connector_type = 2;
+  // Current connection state.
+  ConnectionState state = 3;
+  // When the connector was linked.
+  google.protobuf.Timestamp linked_at = 4;
+  // When the last sync completed.
+  google.protobuf.Timestamp last_synced_at = 5;
+  // Error message if in error state.
+  string error_message = 6;
+}
+
+// State of a connector connection.
+enum ConnectionState {
+  CONNECTION_STATE_UNSPECIFIED = 0;
+  CONNECTION_STATE_CONNECTED = 1;
+  CONNECTION_STATE_DISCONNECTED = 2;
+  CONNECTION_STATE_SYNCING = 3;
+  CONNECTION_STATE_ERROR = 4;
+}
+
+// Result of a sync operation.
+message SyncResult {
+  // Number of items imported from the external system.
+  int32 items_imported = 1;
+  // Number of items exported to the external system.
+  int32 items_exported = 2;
+  // Number of conflicts encountered.
+  int32 conflicts = 3;
+  // Error message if the sync partially failed.
+  string error_message = 4;
+}

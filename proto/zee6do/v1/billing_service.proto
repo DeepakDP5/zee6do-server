@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+// BillingService handles subscription receipt verification and status management.
+service BillingService {
+  // VerifyReceipt verifies an App Store or Play Store receipt and updates subscription.
+  rpc VerifyReceipt(VerifyReceiptRequest) returns (VerifyReceiptResponse);
+  // GetSubscriptionStatus returns the current subscription state.
+  rpc GetSubscriptionStatus(GetSubscriptionStatusRequest) returns (GetSubscriptionStatusResponse);
+  // RestorePurchases restores a subscription on a new device.
+  rpc RestorePurchases(RestorePurchasesRequest) returns (RestorePurchasesResponse);
+}
+
+// Billing platform.
+enum BillingPlatform {
+  BILLING_PLATFORM_UNSPECIFIED = 0;
+  BILLING_PLATFORM_APPLE = 1;
+  BILLING_PLATFORM_GOOGLE = 2;
+}
+
+// Subscription lifecycle status.
+enum SubscriptionStatus {
+  SUBSCRIPTION_STATUS_UNSPECIFIED = 0;
+  SUBSCRIPTION_STATUS_ACTIVE = 1;
+  SUBSCRIPTION_STATUS_TRIAL = 2;
+  SUBSCRIPTION_STATUS_EXPIRED = 3;
+  SUBSCRIPTION_STATUS_GRACE_PERIOD = 4;
+  SUBSCRIPTION_STATUS_CANCELLED = 5;
+}
+
+message VerifyReceiptRequest {
+  // Platform the receipt is from.
+  BillingPlatform platform = 1 [(buf.validate.field).enum = {
+    defined_only: true,
+    not_in: [0]
+  }];
+  // Raw receipt data from the app store.
+  string receipt_data = 2 [(buf.validate.field).string.min_len = 1];
+}
+
+message VerifyReceiptResponse {
+  // Updated subscription state.
+  Subscription subscription = 1;
+}
+
+message GetSubscriptionStatusRequest {}
+
+message GetSubscriptionStatusResponse {
+  // Current subscription state.
+  Subscription subscription = 1;
+}
+
+message RestorePurchasesRequest {
+  // Platform to restore from.
+  BillingPlatform platform = 1 [(buf.validate.field).enum = {
+    defined_only: true,
+    not_in: [0]
+  }];
+  // Receipt data for restoration.
+  string receipt_data = 2 [(buf.validate.field).string.min_len = 1];
+}
+
+message RestorePurchasesResponse {
+  // Restored subscription state.
+  Subscription subscription = 1;
+}
+
+// Subscription state for a user.
+message Subscription {
+  // Subscription status.
+  SubscriptionStatus status = 1;
+  // Plan name (e.g., "Pro Monthly").
+  string plan = 2;
+  // Price per period in cents.
+  int32 price_cents = 3;
+  // Currency code (e.g., "USD").
+  string currency = 4;
+  // Platform the subscription was purchased on.
+  BillingPlatform platform = 5;
+  // When the subscription started.
+  google.protobuf.Timestamp starts_at = 6;
+  // When the current period expires.
+  google.protobuf.Timestamp expires_at = 7;
+  // When the trial ends (if in trial).
+  google.protobuf.Timestamp trial_ends_at = 8;
+  // When the grace period ends (if in grace period).
+  google.protobuf.Timestamp grace_period_ends_at = 9;
+}

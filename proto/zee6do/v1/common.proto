@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+// Pagination request parameters for list operations.
+message Pagination {
+  // Maximum number of items to return per page. Must be between 1 and 100.
+  int32 page_size = 1;
+  // Opaque token for fetching the next page. Empty for the first page.
+  string page_token = 2;
+}
+
+// Pagination metadata returned in list responses.
+message PaginatedResponse {
+  // Token to retrieve the next page. Empty if no more pages.
+  string next_page_token = 1;
+  // Total count of items matching the query (across all pages).
+  int32 total_count = 2;
+}
+
+// Sort direction for list queries.
+enum SortOrder {
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ORDER_ASC = 1;
+  SORT_ORDER_DESC = 2;
+}
+
+// Lifecycle status of a task.
+enum TaskStatus {
+  TASK_STATUS_UNSPECIFIED = 0;
+  TASK_STATUS_TODO = 1;
+  TASK_STATUS_IN_PROGRESS = 2;
+  TASK_STATUS_BLOCKED = 3;
+  TASK_STATUS_DONE = 4;
+  TASK_STATUS_ARCHIVED = 5;
+}
+
+// Priority level for a task. Lower number = higher priority.
+enum TaskPriority {
+  TASK_PRIORITY_UNSPECIFIED = 0;
+  TASK_PRIORITY_P0_CRITICAL = 1;
+  TASK_PRIORITY_P1_HIGH = 2;
+  TASK_PRIORITY_P2_MEDIUM = 3;
+  TASK_PRIORITY_P3_LOW = 4;
+}
+
+// Origin source of a task.
+enum TaskSource {
+  TASK_SOURCE_UNSPECIFIED = 0;
+  TASK_SOURCE_MANUAL = 1;
+  TASK_SOURCE_VOICE = 2;
+  TASK_SOURCE_AI = 3;
+  TASK_SOURCE_SLACK = 4;
+  TASK_SOURCE_EMAIL = 5;
+  TASK_SOURCE_CLICKUP = 6;
+}
+
+// Type of external connector integration.
+enum ConnectorType {
+  CONNECTOR_TYPE_UNSPECIFIED = 0;
+  CONNECTOR_TYPE_GOOGLE_CALENDAR = 1;
+  CONNECTOR_TYPE_SLACK = 2;
+  CONNECTOR_TYPE_EMAIL = 3;
+  CONNECTOR_TYPE_CLICKUP = 4;
+}
