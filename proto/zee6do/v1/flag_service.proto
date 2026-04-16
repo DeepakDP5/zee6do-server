@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+// FlagService provides feature flag values for the authenticated user.
+service FlagService {
+  // GetFlags returns all feature flags and their values for the current user.
+  rpc GetFlags(GetFlagsRequest) returns (GetFlagsResponse);
+}
+
+message GetFlagsRequest {}
+
+message GetFlagsResponse {
+  // Feature flags keyed by flag name.
+  repeated FeatureFlag flags = 1;
+}
+
+// A single feature flag.
+message FeatureFlag {
+  // Flag name (e.g., "beta_paywall_active", "ai_chat_enabled").
+  string name = 1;
+  // Whether the flag is enabled for this user.
+  bool enabled = 2;
+  // Optional string value for flags that carry configuration.
+  string value = 3;
+}

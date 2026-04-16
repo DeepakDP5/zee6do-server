@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "zee6do/v1/auth_service.proto";
+
+// UserService manages user profiles, preferences, data export, and account deletion.
+service UserService {
+  // GetProfile returns the authenticated user's full profile.
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  // UpdateProfile partially updates the user's profile using a field mask.
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+  // ExportData streams the user's complete data export (GDPR).
+  rpc ExportData(ExportDataRequest) returns (stream ExportDataResponse);
+  // DeleteAccount schedules the account for permanent deletion within 30 days.
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
+}
+
+message GetProfileRequest {}
+
+message GetProfileResponse {
+  // Full user profile.
+  UserProfile profile = 1;
+}
+
+message UpdateProfileRequest {
+  // Fields to update, specified by the field mask.
+  UserProfile profile = 1 [(buf.validate.field).required = true];
+  // Which fields to update. Only fields included in the mask are changed.
+  google.protobuf.FieldMask update_mask = 2 [(buf.validate.field).required = true];
+}
+
+message UpdateProfileResponse {
+  // Updated profile.
+  UserProfile profile = 1;
+}
+
+message ExportDataRequest {}
+
+message ExportDataResponse {
+  // Chunk of exported data (JSON bytes). Streamed in pieces for large exports.
+  bytes data_chunk = 1;
+  // MIME type of the export (e.g., "application/json").
+  string content_type = 2;
+  // Filename hint for the export (e.g., "zee6do-export-2024-01-15.json").
+  string filename = 3;
+}
+
+message DeleteAccountRequest {}
+
+message DeleteAccountResponse {
+  // When the account will be permanently deleted.
+  google.protobuf.Timestamp deletion_scheduled_at = 1;
+}
+
+// Full user profile with preferences.
+message UserProfile {
+  // Core user fields (from auth).
+  User user = 1;
+  // User's timezone (IANA format, e.g., "America/New_York").
+  string timezone = 2;
+  // User preferences.
+  UserPreferences preferences = 3;
+  // When the profile was last updated.
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+// User-configurable preferences.
+message UserPreferences {
+  // Theme preference.
+  ThemePreference theme = 1;
+  // AI behavior aggressiveness (1=conservative, 5=aggressive auto-apply).
+  int32 ai_aggressiveness = 2;
+  // Work hours start (24h format, e.g., "09:00").
+  string work_hours_start = 3;
+  // Work hours end (24h format, e.g., "17:00").
+  string work_hours_end = 4;
+  // Notification preferences.
+  NotificationSettings notification_settings = 5;
+}
+
+// Theme selection.
+enum ThemePreference {
+  THEME_PREFERENCE_UNSPECIFIED = 0;
+  THEME_PREFERENCE_LIGHT = 1;
+  THEME_PREFERENCE_DARK = 2;
+}
+
+// Notification toggle settings.
+message NotificationSettings {
+  // Enable morning briefing notifications.
+  bool morning_briefing = 1;
+  // Enable task reminder notifications.
+  bool reminders = 2;
+  // Enable deadline alert notifications.
+  bool deadlines = 3;
+  // Enable connector alert notifications.
+  bool connector_alerts = 4;
+  // Enable daily summary notifications.
+  bool daily_summary = 5;
+  // Quiet hours start (24h format, e.g., "22:00").
+  string quiet_hours_start = 6;
+  // Quiet hours end (24h format, e.g., "07:00").
+  string quiet_hours_end = 7;
+}

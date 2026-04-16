@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+// StorageService manages file attachments via S3 pre-signed URLs.
+service StorageService {
+  // GetUploadURL generates a pre-signed PUT URL for uploading an attachment.
+  rpc GetUploadURL(GetUploadURLRequest) returns (GetUploadURLResponse);
+  // GetDownloadURL generates a pre-signed GET URL for downloading an attachment.
+  rpc GetDownloadURL(GetDownloadURLRequest) returns (GetDownloadURLResponse);
+  // DeleteAttachment removes an attachment from storage and metadata.
+  rpc DeleteAttachment(DeleteAttachmentRequest) returns (DeleteAttachmentResponse);
+  // ListAttachments lists all attachments for a given task.
+  rpc ListAttachments(ListAttachmentsRequest) returns (ListAttachmentsResponse);
+}
+
+message GetUploadURLRequest {
+  // Original filename.
+  string filename = 1 [(buf.validate.field).string.min_len = 1];
+  // MIME content type (e.g., "image/png", "application/pdf").
+  string content_type = 2 [(buf.validate.field).string.min_len = 1];
+  // Task this attachment belongs to.
+  string task_id = 3 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetUploadURLResponse {
+  // Pre-signed PUT URL for uploading. Expires in 15 minutes.
+  string presigned_url = 1;
+  // Server-assigned attachment ID.
+  string attachment_id = 2;
+}
+
+message GetDownloadURLRequest {
+  // Attachment ID to download.
+  string attachment_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetDownloadURLResponse {
+  // Pre-signed GET URL for downloading. Expires in 15 minutes.
+  string presigned_url = 1;
+}
+
+message DeleteAttachmentRequest {
+  // Attachment ID to delete.
+  string attachment_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message DeleteAttachmentResponse {}
+
+message ListAttachmentsRequest {
+  // Task ID to list attachments for.
+  string task_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message ListAttachmentsResponse {
+  // Attachments for the task.
+  repeated Attachment attachments = 1;
+}
+
+// Metadata for a file attachment.
+message Attachment {
+  // Unique attachment identifier.
+  string id = 1;
+  // Task this attachment belongs to.
+  string task_id = 2;
+  // Original filename.
+  string filename = 3;
+  // MIME content type.
+  string content_type = 4;
+  // File size in bytes.
+  int64 size_bytes = 5;
+  // When the attachment was uploaded.
+  google.protobuf.Timestamp created_at = 6;
+}

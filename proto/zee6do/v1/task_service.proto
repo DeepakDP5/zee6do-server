@@ -1,0 +1,251 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "zee6do/v1/common.proto";
+
+// TaskService manages task CRUD, subtasks, batch operations, and search.
+service TaskService {
+  // CreateTask creates a new task. AI auto-assigns priority, category, and tags.
+  rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
+  // GetTask retrieves a single task by ID.
+  rpc GetTask(GetTaskRequest) returns (GetTaskResponse);
+  // UpdateTask partially updates a task using a field mask.
+  rpc UpdateTask(UpdateTaskRequest) returns (UpdateTaskResponse);
+  // DeleteTask soft-deletes a task (moves to trash).
+  rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse);
+  // ListTasks returns a filtered, sorted, paginated list of tasks.
+  rpc ListTasks(ListTasksRequest) returns (ListTasksResponse);
+  // BatchUpdate applies the same update to multiple tasks.
+  rpc BatchUpdate(BatchUpdateRequest) returns (BatchUpdateResponse);
+  // SearchTasks performs text search across tasks with optional filters.
+  rpc SearchTasks(SearchTasksRequest) returns (SearchTasksResponse);
+  // CreateSubtask creates a child task under a parent task.
+  rpc CreateSubtask(CreateSubtaskRequest) returns (CreateSubtaskResponse);
+}
+
+// Full task representation.
+message Task {
+  // Unique task identifier.
+  string id = 1;
+  // Owning user identifier.
+  string user_id = 2;
+  // Task title.
+  string title = 3;
+  // Task description (plain text or markdown).
+  string description = 4;
+  // Current lifecycle status.
+  TaskStatus status = 5;
+  // Priority level.
+  TaskPriority priority = 6;
+  // When the task is due.
+  google.protobuf.Timestamp due_date = 7;
+  // AI-computed optimal date to work on this task.
+  google.protobuf.Timestamp scheduled_date = 8;
+  // Category label (e.g., "Work", "Personal", "Health").
+  string category = 9;
+  // Free-form tags for filtering and grouping.
+  repeated string tags = 10;
+  // Smart context label (e.g., "morning", "deep-work", "admin").
+  string context = 11;
+  // Parent task ID for subtasks. Empty if top-level.
+  string parent_task_id = 12;
+  // Recurrence rule for repeating tasks.
+  RecurrenceRule recurrence = 13;
+  // Estimated duration in minutes.
+  int32 estimated_duration_minutes = 14;
+  // Actual time spent in minutes.
+  int32 actual_duration_minutes = 15;
+  // AI-generated notes about this task (reasoning, suggestions).
+  string ai_notes = 16;
+  // How this task was created.
+  TaskSource source = 17;
+  // Reference to external connector item (e.g., ClickUp task ID, Slack message).
+  ConnectorReference connector_ref = 18;
+  // Number of subtasks.
+  int32 subtask_count = 19;
+  // Number of completed subtasks.
+  int32 completed_subtask_count = 20;
+  // When the task was created.
+  google.protobuf.Timestamp created_at = 21;
+  // When the task was last updated.
+  google.protobuf.Timestamp updated_at = 22;
+}
+
+// Recurrence configuration for repeating tasks.
+message RecurrenceRule {
+  // Recurrence frequency.
+  RecurrenceFrequency frequency = 1;
+  // Interval between occurrences (e.g., every 2 weeks).
+  int32 interval = 2;
+  // Days of week for weekly recurrence (0=Sunday, 6=Saturday).
+  repeated int32 days_of_week = 3;
+  // When the recurrence ends. Empty means no end date.
+  google.protobuf.Timestamp end_date = 4;
+}
+
+// Recurrence frequency type.
+enum RecurrenceFrequency {
+  RECURRENCE_FREQUENCY_UNSPECIFIED = 0;
+  RECURRENCE_FREQUENCY_DAILY = 1;
+  RECURRENCE_FREQUENCY_WEEKLY = 2;
+  RECURRENCE_FREQUENCY_MONTHLY = 3;
+  RECURRENCE_FREQUENCY_YEARLY = 4;
+}
+
+// Reference to an external connector item.
+message ConnectorReference {
+  // Connector type.
+  ConnectorType connector_type = 1;
+  // External item ID in the connected system.
+  string external_id = 2;
+  // URL to the item in the connected system.
+  string external_url = 3;
+}
+
+message CreateTaskRequest {
+  // Task title (required).
+  string title = 1 [(buf.validate.field).string.min_len = 1];
+  // Task description (optional).
+  string description = 2;
+  // Due date (optional).
+  google.protobuf.Timestamp due_date = 3;
+  // Priority (optional — AI auto-assigns if unset).
+  TaskPriority priority = 4;
+  // Category (optional — AI auto-assigns if unset).
+  string category = 5;
+  // Tags (optional — AI auto-assigns if unset).
+  repeated string tags = 6;
+  // Task source.
+  TaskSource source = 7;
+  // Recurrence rule (optional).
+  RecurrenceRule recurrence = 8;
+  // Estimated duration in minutes (optional).
+  int32 estimated_duration_minutes = 9;
+}
+
+message CreateTaskResponse {
+  // The newly created task with AI-assigned fields populated.
+  Task task = 1;
+}
+
+message GetTaskRequest {
+  // Task ID to retrieve.
+  string task_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetTaskResponse {
+  Task task = 1;
+}
+
+message UpdateTaskRequest {
+  // Task ID to update.
+  string task_id = 1 [(buf.validate.field).string.min_len = 1];
+  // Updated task fields.
+  Task task = 2 [(buf.validate.field).required = true];
+  // Which fields to update. Only fields in the mask are changed.
+  google.protobuf.FieldMask update_mask = 3 [(buf.validate.field).required = true];
+}
+
+message UpdateTaskResponse {
+  // Updated task.
+  Task task = 1;
+}
+
+message DeleteTaskRequest {
+  // Task ID to soft-delete.
+  string task_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message DeleteTaskResponse {}
+
+message ListTasksRequest {
+  // Filter criteria.
+  TaskFilter filter = 1;
+  // Sort field name (e.g., "due_date", "priority", "created_at").
+  string sort_by = 2;
+  // Sort direction.
+  SortOrder sort_order = 3;
+  // Pagination parameters.
+  Pagination pagination = 4;
+}
+
+message ListTasksResponse {
+  // Tasks matching the query.
+  repeated Task tasks = 1;
+  // Pagination metadata.
+  PaginatedResponse pagination = 2;
+}
+
+// Filter criteria for listing tasks.
+message TaskFilter {
+  // Filter by status (empty = all statuses).
+  repeated TaskStatus statuses = 1;
+  // Filter by priority (empty = all priorities).
+  repeated TaskPriority priorities = 2;
+  // Filter by category (empty = all categories).
+  string category = 3;
+  // Filter by tags (match any).
+  repeated string tags = 4;
+  // Tasks due before this date.
+  google.protobuf.Timestamp due_before = 5;
+  // Tasks due after this date.
+  google.protobuf.Timestamp due_after = 6;
+  // Free-text search query.
+  string search_query = 7;
+  // Include soft-deleted tasks.
+  bool include_deleted = 8;
+}
+
+message BatchUpdateRequest {
+  // Task IDs to update.
+  repeated string task_ids = 1 [(buf.validate.field).repeated.min_items = 1];
+  // Fields to apply to all tasks.
+  Task task = 2 [(buf.validate.field).required = true];
+  // Which fields to update on each task.
+  google.protobuf.FieldMask update_mask = 3 [(buf.validate.field).required = true];
+}
+
+message BatchUpdateResponse {
+  // Updated tasks.
+  repeated Task tasks = 1;
+  // Number of tasks that failed to update.
+  int32 failed_count = 2;
+}
+
+message SearchTasksRequest {
+  // Natural language or keyword search query.
+  string query = 1 [(buf.validate.field).string.min_len = 1];
+  // Optional filters to narrow results.
+  TaskFilter filter = 2;
+  // Pagination parameters.
+  Pagination pagination = 3;
+}
+
+message SearchTasksResponse {
+  // Matching tasks.
+  repeated Task tasks = 1;
+  // Pagination metadata.
+  PaginatedResponse pagination = 2;
+}
+
+message CreateSubtaskRequest {
+  // Parent task ID.
+  string parent_task_id = 1 [(buf.validate.field).string.min_len = 1];
+  // Subtask title.
+  string title = 2 [(buf.validate.field).string.min_len = 1];
+  // Subtask description (optional).
+  string description = 3;
+  // Priority (optional — inherits from parent if unset).
+  TaskPriority priority = 4;
+}
+
+message CreateSubtaskResponse {
+  // The newly created subtask.
+  Task task = 1;
+}

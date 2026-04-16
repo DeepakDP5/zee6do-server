@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+import "buf/validate/validate.proto";
+import "zee6do/v1/user_service.proto";
+
+// NotificationService manages push notification preferences and device registration.
+service NotificationService {
+  // GetPreferences returns the user's notification preferences.
+  rpc GetPreferences(GetPreferencesRequest) returns (GetPreferencesResponse);
+  // UpdatePreferences updates the user's notification preferences.
+  rpc UpdatePreferences(UpdatePreferencesRequest) returns (UpdatePreferencesResponse);
+  // RegisterDevice registers a device push token for notifications.
+  rpc RegisterDevice(RegisterDeviceRequest) returns (RegisterDeviceResponse);
+}
+
+message GetPreferencesRequest {}
+
+message GetPreferencesResponse {
+  // Current notification preferences.
+  NotificationSettings preferences = 1;
+}
+
+message UpdatePreferencesRequest {
+  // Updated preferences.
+  NotificationSettings preferences = 1 [(buf.validate.field).required = true];
+}
+
+message UpdatePreferencesResponse {
+  // Updated preferences.
+  NotificationSettings preferences = 1;
+}
+
+// Push notification platform.
+enum PushPlatform {
+  PUSH_PLATFORM_UNSPECIFIED = 0;
+  PUSH_PLATFORM_IOS = 1;
+  PUSH_PLATFORM_ANDROID = 2;
+}
+
+message RegisterDeviceRequest {
+  // Push token from APNs (iOS) or FCM (Android).
+  string push_token = 1 [(buf.validate.field).string.min_len = 1];
+  // Platform for this token.
+  PushPlatform platform = 2 [(buf.validate.field).enum = {
+    defined_only: true,
+    not_in: [0]
+  }];
+}
+
+message RegisterDeviceResponse {}

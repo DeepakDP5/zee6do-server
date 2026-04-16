@@ -1,0 +1,178 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "zee6do/v1/common.proto";
+import "zee6do/v1/task_service.proto";
+
+// AIService provides AI-powered task management: chat, NLP parsing, suggestions, undo, and daily planning.
+service AIService {
+  // Chat sends a message and receives a streaming AI response.
+  rpc Chat(ChatRequest) returns (stream ChatResponse);
+  // ProcessNaturalLanguage parses free-form text into structured task(s).
+  rpc ProcessNaturalLanguage(ProcessNaturalLanguageRequest) returns (ProcessNaturalLanguageResponse);
+  // GetSuggestions returns contextual AI suggestions for the current user.
+  rpc GetSuggestions(GetSuggestionsRequest) returns (GetSuggestionsResponse);
+  // UndoAction reverts a previous AI-applied action.
+  rpc UndoAction(UndoActionRequest) returns (UndoActionResponse);
+  // GenerateTemplate creates a project template from a description.
+  rpc GenerateTemplate(GenerateTemplateRequest) returns (GenerateTemplateResponse);
+  // GetDailyPlan generates the morning briefing / daily plan.
+  rpc GetDailyPlan(GetDailyPlanRequest) returns (GetDailyPlanResponse);
+}
+
+message ChatRequest {
+  // User's message text.
+  string message = 1 [(buf.validate.field).string.min_len = 1];
+  // Conversation ID to continue an existing conversation. Empty starts a new one.
+  string conversation_id = 2;
+}
+
+message ChatResponse {
+  // Streamed text chunk (partial response).
+  string text_chunk = 1;
+  // Conversation ID for follow-up messages.
+  string conversation_id = 2;
+  // Whether this is the final chunk.
+  bool done = 3;
+  // Actions taken by the AI during this response (e.g., task created, status changed).
+  repeated AIAction actions = 4;
+}
+
+// An action performed by the AI (auto-applied).
+message AIAction {
+  // Unique action identifier (for undo).
+  string id = 1;
+  // Type of action performed.
+  AIActionType action_type = 2;
+  // ID of the target entity (e.g., task ID).
+  string target_id = 3;
+  // Human-readable description of what was done.
+  string description = 4;
+  // When the action was performed.
+  google.protobuf.Timestamp created_at = 5;
+}
+
+// Types of AI actions.
+enum AIActionType {
+  AI_ACTION_TYPE_UNSPECIFIED = 0;
+  AI_ACTION_TYPE_TASK_CREATED = 1;
+  AI_ACTION_TYPE_TASK_UPDATED = 2;
+  AI_ACTION_TYPE_TASK_DELETED = 3;
+  AI_ACTION_TYPE_STATUS_CHANGED = 4;
+  AI_ACTION_TYPE_PRIORITY_CHANGED = 5;
+  AI_ACTION_TYPE_RESCHEDULED = 6;
+  AI_ACTION_TYPE_CATEGORIZED = 7;
+  AI_ACTION_TYPE_TEMPLATE_APPLIED = 8;
+}
+
+message ProcessNaturalLanguageRequest {
+  // Free-form text to parse (e.g., "Call dentist tomorrow at 3pm").
+  string text = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message ProcessNaturalLanguageResponse {
+  // Parsed tasks extracted from the input text.
+  repeated ParsedTask parsed_tasks = 1;
+  // Overall confidence score (0.0 to 1.0).
+  float confidence = 2;
+}
+
+// A task parsed from natural language input.
+message ParsedTask {
+  // Extracted title.
+  string title = 1;
+  // Extracted description.
+  string description = 2;
+  // Extracted due date (if detected).
+  google.protobuf.Timestamp due_date = 3;
+  // AI-assigned priority.
+  TaskPriority priority = 4;
+  // AI-assigned category.
+  string category = 5;
+  // AI-assigned tags.
+  repeated string tags = 6;
+  // Per-field confidence scores.
+  map<string, float> field_confidence = 7;
+}
+
+message GetSuggestionsRequest {
+  // Contextual hint (e.g., "dashboard", "task_detail:abc123").
+  string context = 1;
+}
+
+message GetSuggestionsResponse {
+  // AI suggestions for the user.
+  repeated Suggestion suggestions = 1;
+}
+
+// An AI-generated suggestion.
+message Suggestion {
+  // Unique suggestion identifier.
+  string id = 1;
+  // Suggestion category.
+  SuggestionType type = 2;
+  // Human-readable suggestion text.
+  string message = 3;
+  // Related task ID (if applicable).
+  string task_id = 4;
+  // The action to perform if accepted (serialized as JSON).
+  string action_payload = 5;
+}
+
+// Types of AI suggestions.
+enum SuggestionType {
+  SUGGESTION_TYPE_UNSPECIFIED = 0;
+  SUGGESTION_TYPE_PRIORITIZE = 1;
+  SUGGESTION_TYPE_RESCHEDULE = 2;
+  SUGGESTION_TYPE_ARCHIVE = 3;
+  SUGGESTION_TYPE_BREAK_DOWN = 4;
+  SUGGESTION_TYPE_DELEGATE = 5;
+}
+
+message UndoActionRequest {
+  // Action ID to revert.
+  string action_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message UndoActionResponse {
+  // Description of what was reverted.
+  string description = 1;
+}
+
+message GenerateTemplateRequest {
+  // Description of the project to generate a template for.
+  string description = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message GenerateTemplateResponse {
+  // Generated template tasks.
+  repeated Task template_tasks = 1;
+}
+
+message GetDailyPlanRequest {}
+
+message GetDailyPlanResponse {
+  // Greeting message for the user.
+  string greeting = 1;
+  // Ordered list of tasks for the day.
+  repeated DailyPlanItem items = 2;
+  // AI recommendations for the day.
+  repeated string recommendations = 3;
+  // Summary of yesterday's progress.
+  string yesterday_summary = 4;
+}
+
+// A single item in the daily plan.
+message DailyPlanItem {
+  // The task to work on.
+  Task task = 1;
+  // Suggested time slot to work on this task.
+  google.protobuf.Timestamp suggested_start = 2;
+  // AI reasoning for this placement.
+  string reasoning = 3;
+}

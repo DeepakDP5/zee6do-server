@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package zee6do.v1;
+
+option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+// SyncService implements the WatermelonDB sync protocol for offline-first support.
+service SyncService {
+  // PullChanges returns all changes since the client's last sync timestamp.
+  rpc PullChanges(PullChangesRequest) returns (PullChangesResponse);
+  // PushChanges accepts client-side changes and resolves conflicts.
+  rpc PushChanges(PushChangesRequest) returns (PushChangesResponse);
+}
+
+message PullChangesRequest {
+  // Timestamp of the client's last successful pull. Zero value for initial sync.
+  google.protobuf.Timestamp last_pulled_at = 1;
+  // Client's schema version for migration compatibility.
+  int32 schema_version = 2;
+}
+
+message PullChangesResponse {
+  // Changes grouped by collection.
+  map<string, SyncCollectionChanges> changes = 1;
+  // Server timestamp to use as last_pulled_at for the next pull.
+  google.protobuf.Timestamp timestamp = 2;
+}
+
+// Changes for a single WatermelonDB collection.
+message SyncCollectionChanges {
+  // Records created since last_pulled_at (full JSON representation).
+  repeated bytes created = 1;
+  // Records updated since last_pulled_at (full JSON representation).
+  repeated bytes updated = 2;
+  // IDs of records deleted since last_pulled_at.
+  repeated string deleted = 3;
+}
+
+message PushChangesRequest {
+  // Changes from the client, grouped by collection.
+  map<string, SyncCollectionChanges> changes = 1 [(buf.validate.field).required = true];
+  // Timestamp from the client's last successful pull.
+  google.protobuf.Timestamp last_pulled_at = 2;
+}
+
+message PushChangesResponse {
+  // Conflicts that the client needs to resolve.
+  repeated SyncConflict conflicts = 1;
+}
+
+// A sync conflict requiring resolution.
+message SyncConflict {
+  // Collection name (e.g., "tasks").
+  string collection = 1;
+  // Record ID with the conflict.
+  string record_id = 2;
+  // Server's current version of the record (JSON).
+  bytes server_record = 3;
+  // Client's version that caused the conflict (JSON).
+  bytes client_record = 4;
+  // How the conflict was resolved.
+  ConflictResolution resolution = 5;
+}
+
+// How a sync conflict was resolved.
+enum ConflictResolution {
+  CONFLICT_RESOLUTION_UNSPECIFIED = 0;
+  // Server version wins (client changes discarded).
+  CONFLICT_RESOLUTION_SERVER_WINS = 1;
+  // Client version wins (server changes overwritten).
+  CONFLICT_RESOLUTION_CLIENT_WINS = 2;
+  // AI merged both versions at field level.
+  CONFLICT_RESOLUTION_AI_MERGED = 3;
+  // Conflict requires manual user resolution.
+  CONFLICT_RESOLUTION_MANUAL = 4;
+}
