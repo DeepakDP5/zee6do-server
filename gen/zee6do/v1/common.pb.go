@@ -7,8 +7,10 @@
 package zee6dov1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -187,6 +189,9 @@ func (TaskPriority) EnumDescriptor() ([]byte, []int) {
 }
 
 // Origin source of a task.
+// NOTE: TaskSource, ConnectorType, and KnowledgeSourceType (in knowledge_service.proto)
+// share overlapping integration values (SLACK, EMAIL, CLICKUP). When adding a new
+// integration, check all three enums to keep them in sync.
 type TaskSource int32
 
 const (
@@ -249,6 +254,9 @@ func (TaskSource) EnumDescriptor() ([]byte, []int) {
 }
 
 // Type of external connector integration.
+// NOTE: ConnectorType, TaskSource, and KnowledgeSourceType (in knowledge_service.proto)
+// share overlapping integration values (SLACK, EMAIL, CLICKUP). When adding a new
+// integration, check all three enums to keep them in sync.
 type ConnectorType int32
 
 const (
@@ -414,20 +422,286 @@ func (x *PaginatedResponse) GetTotalCount() int32 {
 	return 0
 }
 
+// User profile. Core domain entity shared across services.
+type User struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Unique user identifier.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Phone number (E.164 format).
+	Phone string `protobuf:"bytes,2,opt,name=phone,proto3" json:"phone,omitempty"`
+	// Email address (optional).
+	Email string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	// Display name.
+	Name string `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	// Avatar image URL.
+	AvatarUrl string `protobuf:"bytes,5,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	// When the account was created.
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *User) Reset() {
+	*x = User{}
+	mi := &file_zee6do_v1_common_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *User) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*User) ProtoMessage() {}
+
+func (x *User) ProtoReflect() protoreflect.Message {
+	mi := &file_zee6do_v1_common_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use User.ProtoReflect.Descriptor instead.
+func (*User) Descriptor() ([]byte, []int) {
+	return file_zee6do_v1_common_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *User) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *User) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *User) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *User) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *User) GetAvatarUrl() string {
+	if x != nil {
+		return x.AvatarUrl
+	}
+	return ""
+}
+
+func (x *User) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+// Notification toggle settings.
+type NotificationSettings struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Enable morning briefing notifications.
+	MorningBriefing bool `protobuf:"varint,1,opt,name=morning_briefing,json=morningBriefing,proto3" json:"morning_briefing,omitempty"`
+	// Enable task reminder notifications.
+	Reminders bool `protobuf:"varint,2,opt,name=reminders,proto3" json:"reminders,omitempty"`
+	// Enable deadline alert notifications.
+	Deadlines bool `protobuf:"varint,3,opt,name=deadlines,proto3" json:"deadlines,omitempty"`
+	// Enable connector alert notifications.
+	ConnectorAlerts bool `protobuf:"varint,4,opt,name=connector_alerts,json=connectorAlerts,proto3" json:"connector_alerts,omitempty"`
+	// Enable daily summary notifications.
+	DailySummary bool `protobuf:"varint,5,opt,name=daily_summary,json=dailySummary,proto3" json:"daily_summary,omitempty"`
+	// Quiet hours start (24h format, e.g., "22:00").
+	QuietHoursStart string `protobuf:"bytes,6,opt,name=quiet_hours_start,json=quietHoursStart,proto3" json:"quiet_hours_start,omitempty"`
+	// Quiet hours end (24h format, e.g., "07:00").
+	QuietHoursEnd string `protobuf:"bytes,7,opt,name=quiet_hours_end,json=quietHoursEnd,proto3" json:"quiet_hours_end,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NotificationSettings) Reset() {
+	*x = NotificationSettings{}
+	mi := &file_zee6do_v1_common_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NotificationSettings) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NotificationSettings) ProtoMessage() {}
+
+func (x *NotificationSettings) ProtoReflect() protoreflect.Message {
+	mi := &file_zee6do_v1_common_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NotificationSettings.ProtoReflect.Descriptor instead.
+func (*NotificationSettings) Descriptor() ([]byte, []int) {
+	return file_zee6do_v1_common_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *NotificationSettings) GetMorningBriefing() bool {
+	if x != nil {
+		return x.MorningBriefing
+	}
+	return false
+}
+
+func (x *NotificationSettings) GetReminders() bool {
+	if x != nil {
+		return x.Reminders
+	}
+	return false
+}
+
+func (x *NotificationSettings) GetDeadlines() bool {
+	if x != nil {
+		return x.Deadlines
+	}
+	return false
+}
+
+func (x *NotificationSettings) GetConnectorAlerts() bool {
+	if x != nil {
+		return x.ConnectorAlerts
+	}
+	return false
+}
+
+func (x *NotificationSettings) GetDailySummary() bool {
+	if x != nil {
+		return x.DailySummary
+	}
+	return false
+}
+
+func (x *NotificationSettings) GetQuietHoursStart() string {
+	if x != nil {
+		return x.QuietHoursStart
+	}
+	return ""
+}
+
+func (x *NotificationSettings) GetQuietHoursEnd() string {
+	if x != nil {
+		return x.QuietHoursEnd
+	}
+	return ""
+}
+
+// Date range for time-bounded queries.
+type DateRange struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Start of the range (inclusive).
+	Start *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=start,proto3" json:"start,omitempty"`
+	// End of the range (inclusive).
+	End           *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=end,proto3" json:"end,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DateRange) Reset() {
+	*x = DateRange{}
+	mi := &file_zee6do_v1_common_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DateRange) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DateRange) ProtoMessage() {}
+
+func (x *DateRange) ProtoReflect() protoreflect.Message {
+	mi := &file_zee6do_v1_common_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DateRange.ProtoReflect.Descriptor instead.
+func (*DateRange) Descriptor() ([]byte, []int) {
+	return file_zee6do_v1_common_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *DateRange) GetStart() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Start
+	}
+	return nil
+}
+
+func (x *DateRange) GetEnd() *timestamppb.Timestamp {
+	if x != nil {
+		return x.End
+	}
+	return nil
+}
+
 var File_zee6do_v1_common_proto protoreflect.FileDescriptor
 
 const file_zee6do_v1_common_proto_rawDesc = "" +
 	"\n" +
-	"\x16zee6do/v1/common.proto\x12\tzee6do.v1\"H\n" +
+	"\x16zee6do/v1/common.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"S\n" +
 	"\n" +
-	"Pagination\x12\x1b\n" +
-	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"Pagination\x12&\n" +
+	"\tpage_size\x18\x01 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x01R\bpageSize\x12\x1d\n" +
 	"\n" +
 	"page_token\x18\x02 \x01(\tR\tpageToken\"\\\n" +
 	"\x11PaginatedResponse\x12&\n" +
 	"\x0fnext_page_token\x18\x01 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x05R\n" +
-	"totalCount*P\n" +
+	"totalCount\"\xb0\x01\n" +
+	"\x04User\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05phone\x18\x02 \x01(\tR\x05phone\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\x12\x12\n" +
+	"\x04name\x18\x04 \x01(\tR\x04name\x12\x1d\n" +
+	"\n" +
+	"avatar_url\x18\x05 \x01(\tR\tavatarUrl\x129\n" +
+	"\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xa1\x02\n" +
+	"\x14NotificationSettings\x12)\n" +
+	"\x10morning_briefing\x18\x01 \x01(\bR\x0fmorningBriefing\x12\x1c\n" +
+	"\treminders\x18\x02 \x01(\bR\treminders\x12\x1c\n" +
+	"\tdeadlines\x18\x03 \x01(\bR\tdeadlines\x12)\n" +
+	"\x10connector_alerts\x18\x04 \x01(\bR\x0fconnectorAlerts\x12#\n" +
+	"\rdaily_summary\x18\x05 \x01(\bR\fdailySummary\x12*\n" +
+	"\x11quiet_hours_start\x18\x06 \x01(\tR\x0fquietHoursStart\x12&\n" +
+	"\x0fquiet_hours_end\x18\a \x01(\tR\rquietHoursEnd\"{\n" +
+	"\tDateRange\x128\n" +
+	"\x05start\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\x05start\x124\n" +
+	"\x03end\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\x03end*P\n" +
 	"\tSortOrder\x12\x1a\n" +
 	"\x16SORT_ORDER_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eSORT_ORDER_ASC\x10\x01\x12\x13\n" +
@@ -475,22 +749,29 @@ func file_zee6do_v1_common_proto_rawDescGZIP() []byte {
 }
 
 var file_zee6do_v1_common_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_zee6do_v1_common_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_zee6do_v1_common_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_zee6do_v1_common_proto_goTypes = []any{
-	(SortOrder)(0),            // 0: zee6do.v1.SortOrder
-	(TaskStatus)(0),           // 1: zee6do.v1.TaskStatus
-	(TaskPriority)(0),         // 2: zee6do.v1.TaskPriority
-	(TaskSource)(0),           // 3: zee6do.v1.TaskSource
-	(ConnectorType)(0),        // 4: zee6do.v1.ConnectorType
-	(*Pagination)(nil),        // 5: zee6do.v1.Pagination
-	(*PaginatedResponse)(nil), // 6: zee6do.v1.PaginatedResponse
+	(SortOrder)(0),                // 0: zee6do.v1.SortOrder
+	(TaskStatus)(0),               // 1: zee6do.v1.TaskStatus
+	(TaskPriority)(0),             // 2: zee6do.v1.TaskPriority
+	(TaskSource)(0),               // 3: zee6do.v1.TaskSource
+	(ConnectorType)(0),            // 4: zee6do.v1.ConnectorType
+	(*Pagination)(nil),            // 5: zee6do.v1.Pagination
+	(*PaginatedResponse)(nil),     // 6: zee6do.v1.PaginatedResponse
+	(*User)(nil),                  // 7: zee6do.v1.User
+	(*NotificationSettings)(nil),  // 8: zee6do.v1.NotificationSettings
+	(*DateRange)(nil),             // 9: zee6do.v1.DateRange
+	(*timestamppb.Timestamp)(nil), // 10: google.protobuf.Timestamp
 }
 var file_zee6do_v1_common_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	10, // 0: zee6do.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	10, // 1: zee6do.v1.DateRange.start:type_name -> google.protobuf.Timestamp
+	10, // 2: zee6do.v1.DateRange.end:type_name -> google.protobuf.Timestamp
+	3,  // [3:3] is the sub-list for method output_type
+	3,  // [3:3] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_zee6do_v1_common_proto_init() }
@@ -504,7 +785,7 @@ func file_zee6do_v1_common_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_zee6do_v1_common_proto_rawDesc), len(file_zee6do_v1_common_proto_rawDesc)),
 			NumEnums:      5,
-			NumMessages:   2,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

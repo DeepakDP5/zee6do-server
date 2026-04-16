@@ -192,11 +192,13 @@ func (x *PullChangesResponse) GetTimestamp() *timestamppb.Timestamp {
 }
 
 // Changes for a single WatermelonDB collection.
+// NOTE: created/updated use repeated bytes intentionally for WatermelonDB sync protocol
+// compatibility. Each entry is an opaque JSON blob whose schema varies per collection.
 type SyncCollectionChanges struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Records created since last_pulled_at (full JSON representation).
+	// Records created since last_pulled_at (full JSON representation as opaque bytes for WatermelonDB compatibility).
 	Created [][]byte `protobuf:"bytes,1,rep,name=created,proto3" json:"created,omitempty"`
-	// Records updated since last_pulled_at (full JSON representation).
+	// Records updated since last_pulled_at (full JSON representation as opaque bytes for WatermelonDB compatibility).
 	Updated [][]byte `protobuf:"bytes,2,rep,name=updated,proto3" json:"updated,omitempty"`
 	// IDs of records deleted since last_pulled_at.
 	Deleted       []string `protobuf:"bytes,3,rep,name=deleted,proto3" json:"deleted,omitempty"`

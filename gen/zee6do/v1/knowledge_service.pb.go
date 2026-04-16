@@ -24,6 +24,9 @@ const (
 )
 
 // Source type for a knowledge base document.
+// NOTE: KnowledgeSourceType, ConnectorType, and TaskSource (in common.proto)
+// share overlapping integration values (SLACK, EMAIL, CLICKUP). When adding a new
+// integration, check all three enums to keep them in sync.
 type KnowledgeSourceType int32
 
 const (

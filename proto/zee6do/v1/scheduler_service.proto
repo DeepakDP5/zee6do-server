@@ -6,6 +6,7 @@ option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
 
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
+import "zee6do/v1/common.proto";
 import "zee6do/v1/task_service.proto";
 
 // SchedulerService manages the AI-powered agenda view, task rescheduling, and conflict resolution.
@@ -19,10 +20,8 @@ service SchedulerService {
 }
 
 message GetAgendaViewRequest {
-  // Start of the date range.
-  google.protobuf.Timestamp start = 1 [(buf.validate.field).required = true];
-  // End of the date range.
-  google.protobuf.Timestamp end = 2 [(buf.validate.field).required = true];
+  // Date range for the agenda view.
+  DateRange date_range = 1 [(buf.validate.field).required = true];
 }
 
 message GetAgendaViewResponse {

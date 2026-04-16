@@ -6,6 +6,7 @@ option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
 
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
+import "zee6do/v1/common.proto";
 
 // AuthService handles authentication, OTP verification, social login, and session management.
 service AuthService {
@@ -34,7 +35,7 @@ enum SocialProvider {
 
 message SendOTPRequest {
   // Phone number in E.164 format (e.g., "+14155552671").
-  string phone_number = 1 [(buf.validate.field).string.min_len = 8];
+  string phone_number = 1 [(buf.validate.field).string.pattern = "^\\+[1-9]\\d{6,14}$"];
 }
 
 message SendOTPResponse {
@@ -128,18 +129,3 @@ message Device {
   bool is_current = 5;
 }
 
-// User profile returned in auth responses. Minimal representation.
-message User {
-  // Unique user identifier.
-  string id = 1;
-  // Phone number (E.164 format).
-  string phone = 2;
-  // Email address (optional).
-  string email = 3;
-  // Display name.
-  string name = 4;
-  // Avatar image URL.
-  string avatar_url = 5;
-  // When the account was created.
-  google.protobuf.Timestamp created_at = 6;
-}

@@ -23,61 +23,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Date range for analytics queries.
-type DateRange struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Start of the range (inclusive).
-	Start *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=start,proto3" json:"start,omitempty"`
-	// End of the range (inclusive).
-	End           *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=end,proto3" json:"end,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DateRange) Reset() {
-	*x = DateRange{}
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DateRange) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DateRange) ProtoMessage() {}
-
-func (x *DateRange) ProtoReflect() protoreflect.Message {
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DateRange.ProtoReflect.Descriptor instead.
-func (*DateRange) Descriptor() ([]byte, []int) {
-	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *DateRange) GetStart() *timestamppb.Timestamp {
-	if x != nil {
-		return x.Start
-	}
-	return nil
-}
-
-func (x *DateRange) GetEnd() *timestamppb.Timestamp {
-	if x != nil {
-		return x.End
-	}
-	return nil
-}
-
 type GetMetricsRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Date range to compute metrics for.
@@ -88,7 +33,7 @@ type GetMetricsRequest struct {
 
 func (x *GetMetricsRequest) Reset() {
 	*x = GetMetricsRequest{}
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[1]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -100,7 +45,7 @@ func (x *GetMetricsRequest) String() string {
 func (*GetMetricsRequest) ProtoMessage() {}
 
 func (x *GetMetricsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[1]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -113,7 +58,7 @@ func (x *GetMetricsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMetricsRequest.ProtoReflect.Descriptor instead.
 func (*GetMetricsRequest) Descriptor() ([]byte, []int) {
-	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{1}
+	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *GetMetricsRequest) GetDateRange() *DateRange {
@@ -143,7 +88,7 @@ type GetMetricsResponse struct {
 
 func (x *GetMetricsResponse) Reset() {
 	*x = GetMetricsResponse{}
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[2]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -155,7 +100,7 @@ func (x *GetMetricsResponse) String() string {
 func (*GetMetricsResponse) ProtoMessage() {}
 
 func (x *GetMetricsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[2]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -168,7 +113,7 @@ func (x *GetMetricsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMetricsResponse.ProtoReflect.Descriptor instead.
 func (*GetMetricsResponse) Descriptor() ([]byte, []int) {
-	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{2}
+	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetMetricsResponse) GetCompletionRate() float32 {
@@ -232,7 +177,7 @@ type DailyMetrics struct {
 
 func (x *DailyMetrics) Reset() {
 	*x = DailyMetrics{}
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[3]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -244,7 +189,7 @@ func (x *DailyMetrics) String() string {
 func (*DailyMetrics) ProtoMessage() {}
 
 func (x *DailyMetrics) ProtoReflect() protoreflect.Message {
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[3]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -257,7 +202,7 @@ func (x *DailyMetrics) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DailyMetrics.ProtoReflect.Descriptor instead.
 func (*DailyMetrics) Descriptor() ([]byte, []int) {
-	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{3}
+	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *DailyMetrics) GetDate() *timestamppb.Timestamp {
@@ -305,7 +250,7 @@ type GetTimeBreakdownRequest struct {
 
 func (x *GetTimeBreakdownRequest) Reset() {
 	*x = GetTimeBreakdownRequest{}
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[4]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -317,7 +262,7 @@ func (x *GetTimeBreakdownRequest) String() string {
 func (*GetTimeBreakdownRequest) ProtoMessage() {}
 
 func (x *GetTimeBreakdownRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[4]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -330,7 +275,7 @@ func (x *GetTimeBreakdownRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTimeBreakdownRequest.ProtoReflect.Descriptor instead.
 func (*GetTimeBreakdownRequest) Descriptor() ([]byte, []int) {
-	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{4}
+	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetTimeBreakdownRequest) GetDateRange() *DateRange {
@@ -356,7 +301,7 @@ type GetTimeBreakdownResponse struct {
 
 func (x *GetTimeBreakdownResponse) Reset() {
 	*x = GetTimeBreakdownResponse{}
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[5]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -368,7 +313,7 @@ func (x *GetTimeBreakdownResponse) String() string {
 func (*GetTimeBreakdownResponse) ProtoMessage() {}
 
 func (x *GetTimeBreakdownResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[5]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -381,7 +326,7 @@ func (x *GetTimeBreakdownResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTimeBreakdownResponse.ProtoReflect.Descriptor instead.
 func (*GetTimeBreakdownResponse) Descriptor() ([]byte, []int) {
-	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{5}
+	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetTimeBreakdownResponse) GetCategoryDistribution() []*CategoryTime {
@@ -427,7 +372,7 @@ type CategoryTime struct {
 
 func (x *CategoryTime) Reset() {
 	*x = CategoryTime{}
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[6]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -439,7 +384,7 @@ func (x *CategoryTime) String() string {
 func (*CategoryTime) ProtoMessage() {}
 
 func (x *CategoryTime) ProtoReflect() protoreflect.Message {
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[6]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -452,7 +397,7 @@ func (x *CategoryTime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CategoryTime.ProtoReflect.Descriptor instead.
 func (*CategoryTime) Descriptor() ([]byte, []int) {
-	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{6}
+	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CategoryTime) GetCategory() string {
@@ -489,7 +434,7 @@ type HourlyActivity struct {
 
 func (x *HourlyActivity) Reset() {
 	*x = HourlyActivity{}
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[7]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -501,7 +446,7 @@ func (x *HourlyActivity) String() string {
 func (*HourlyActivity) ProtoMessage() {}
 
 func (x *HourlyActivity) ProtoReflect() protoreflect.Message {
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[7]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -514,7 +459,7 @@ func (x *HourlyActivity) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HourlyActivity.ProtoReflect.Descriptor instead.
 func (*HourlyActivity) Descriptor() ([]byte, []int) {
-	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{7}
+	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *HourlyActivity) GetHour() int32 {
@@ -543,7 +488,7 @@ type GetAINarrativeRequest struct {
 
 func (x *GetAINarrativeRequest) Reset() {
 	*x = GetAINarrativeRequest{}
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[8]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -555,7 +500,7 @@ func (x *GetAINarrativeRequest) String() string {
 func (*GetAINarrativeRequest) ProtoMessage() {}
 
 func (x *GetAINarrativeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[8]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -568,7 +513,7 @@ func (x *GetAINarrativeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAINarrativeRequest.ProtoReflect.Descriptor instead.
 func (*GetAINarrativeRequest) Descriptor() ([]byte, []int) {
-	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{8}
+	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetAINarrativeRequest) GetDateRange() *DateRange {
@@ -599,7 +544,7 @@ type GetAINarrativeResponse struct {
 
 func (x *GetAINarrativeResponse) Reset() {
 	*x = GetAINarrativeResponse{}
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[9]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -611,7 +556,7 @@ func (x *GetAINarrativeResponse) String() string {
 func (*GetAINarrativeResponse) ProtoMessage() {}
 
 func (x *GetAINarrativeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[9]
+	mi := &file_zee6do_v1_analytics_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -624,7 +569,7 @@ func (x *GetAINarrativeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAINarrativeResponse.ProtoReflect.Descriptor instead.
 func (*GetAINarrativeResponse) Descriptor() ([]byte, []int) {
-	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{9}
+	return file_zee6do_v1_analytics_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetAINarrativeResponse) GetNarrative() string {
@@ -652,10 +597,7 @@ var File_zee6do_v1_analytics_service_proto protoreflect.FileDescriptor
 
 const file_zee6do_v1_analytics_service_proto_rawDesc = "" +
 	"\n" +
-	"!zee6do/v1/analytics_service.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"{\n" +
-	"\tDateRange\x128\n" +
-	"\x05start\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\x05start\x124\n" +
-	"\x03end\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\x03end\"P\n" +
+	"!zee6do/v1/analytics_service.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16zee6do/v1/common.proto\"P\n" +
 	"\x11GetMetricsRequest\x12;\n" +
 	"\n" +
 	"date_range\x18\x01 \x01(\v2\x14.zee6do.v1.DateRangeB\x06\xbaH\x03\xc8\x01\x01R\tdateRange\"\x8f\x02\n" +
@@ -719,41 +661,39 @@ func file_zee6do_v1_analytics_service_proto_rawDescGZIP() []byte {
 	return file_zee6do_v1_analytics_service_proto_rawDescData
 }
 
-var file_zee6do_v1_analytics_service_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_zee6do_v1_analytics_service_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_zee6do_v1_analytics_service_proto_goTypes = []any{
-	(*DateRange)(nil),                // 0: zee6do.v1.DateRange
-	(*GetMetricsRequest)(nil),        // 1: zee6do.v1.GetMetricsRequest
-	(*GetMetricsResponse)(nil),       // 2: zee6do.v1.GetMetricsResponse
-	(*DailyMetrics)(nil),             // 3: zee6do.v1.DailyMetrics
-	(*GetTimeBreakdownRequest)(nil),  // 4: zee6do.v1.GetTimeBreakdownRequest
-	(*GetTimeBreakdownResponse)(nil), // 5: zee6do.v1.GetTimeBreakdownResponse
-	(*CategoryTime)(nil),             // 6: zee6do.v1.CategoryTime
-	(*HourlyActivity)(nil),           // 7: zee6do.v1.HourlyActivity
-	(*GetAINarrativeRequest)(nil),    // 8: zee6do.v1.GetAINarrativeRequest
-	(*GetAINarrativeResponse)(nil),   // 9: zee6do.v1.GetAINarrativeResponse
+	(*GetMetricsRequest)(nil),        // 0: zee6do.v1.GetMetricsRequest
+	(*GetMetricsResponse)(nil),       // 1: zee6do.v1.GetMetricsResponse
+	(*DailyMetrics)(nil),             // 2: zee6do.v1.DailyMetrics
+	(*GetTimeBreakdownRequest)(nil),  // 3: zee6do.v1.GetTimeBreakdownRequest
+	(*GetTimeBreakdownResponse)(nil), // 4: zee6do.v1.GetTimeBreakdownResponse
+	(*CategoryTime)(nil),             // 5: zee6do.v1.CategoryTime
+	(*HourlyActivity)(nil),           // 6: zee6do.v1.HourlyActivity
+	(*GetAINarrativeRequest)(nil),    // 7: zee6do.v1.GetAINarrativeRequest
+	(*GetAINarrativeResponse)(nil),   // 8: zee6do.v1.GetAINarrativeResponse
+	(*DateRange)(nil),                // 9: zee6do.v1.DateRange
 	(*timestamppb.Timestamp)(nil),    // 10: google.protobuf.Timestamp
 }
 var file_zee6do_v1_analytics_service_proto_depIdxs = []int32{
-	10, // 0: zee6do.v1.DateRange.start:type_name -> google.protobuf.Timestamp
-	10, // 1: zee6do.v1.DateRange.end:type_name -> google.protobuf.Timestamp
-	0,  // 2: zee6do.v1.GetMetricsRequest.date_range:type_name -> zee6do.v1.DateRange
-	3,  // 3: zee6do.v1.GetMetricsResponse.daily_metrics:type_name -> zee6do.v1.DailyMetrics
-	10, // 4: zee6do.v1.DailyMetrics.date:type_name -> google.protobuf.Timestamp
-	0,  // 5: zee6do.v1.GetTimeBreakdownRequest.date_range:type_name -> zee6do.v1.DateRange
-	6,  // 6: zee6do.v1.GetTimeBreakdownResponse.category_distribution:type_name -> zee6do.v1.CategoryTime
-	7,  // 7: zee6do.v1.GetTimeBreakdownResponse.hourly_heatmap:type_name -> zee6do.v1.HourlyActivity
-	0,  // 8: zee6do.v1.GetAINarrativeRequest.date_range:type_name -> zee6do.v1.DateRange
-	1,  // 9: zee6do.v1.AnalyticsService.GetMetrics:input_type -> zee6do.v1.GetMetricsRequest
-	4,  // 10: zee6do.v1.AnalyticsService.GetTimeBreakdown:input_type -> zee6do.v1.GetTimeBreakdownRequest
-	8,  // 11: zee6do.v1.AnalyticsService.GetAINarrative:input_type -> zee6do.v1.GetAINarrativeRequest
-	2,  // 12: zee6do.v1.AnalyticsService.GetMetrics:output_type -> zee6do.v1.GetMetricsResponse
-	5,  // 13: zee6do.v1.AnalyticsService.GetTimeBreakdown:output_type -> zee6do.v1.GetTimeBreakdownResponse
-	9,  // 14: zee6do.v1.AnalyticsService.GetAINarrative:output_type -> zee6do.v1.GetAINarrativeResponse
-	12, // [12:15] is the sub-list for method output_type
-	9,  // [9:12] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	9,  // 0: zee6do.v1.GetMetricsRequest.date_range:type_name -> zee6do.v1.DateRange
+	2,  // 1: zee6do.v1.GetMetricsResponse.daily_metrics:type_name -> zee6do.v1.DailyMetrics
+	10, // 2: zee6do.v1.DailyMetrics.date:type_name -> google.protobuf.Timestamp
+	9,  // 3: zee6do.v1.GetTimeBreakdownRequest.date_range:type_name -> zee6do.v1.DateRange
+	5,  // 4: zee6do.v1.GetTimeBreakdownResponse.category_distribution:type_name -> zee6do.v1.CategoryTime
+	6,  // 5: zee6do.v1.GetTimeBreakdownResponse.hourly_heatmap:type_name -> zee6do.v1.HourlyActivity
+	9,  // 6: zee6do.v1.GetAINarrativeRequest.date_range:type_name -> zee6do.v1.DateRange
+	0,  // 7: zee6do.v1.AnalyticsService.GetMetrics:input_type -> zee6do.v1.GetMetricsRequest
+	3,  // 8: zee6do.v1.AnalyticsService.GetTimeBreakdown:input_type -> zee6do.v1.GetTimeBreakdownRequest
+	7,  // 9: zee6do.v1.AnalyticsService.GetAINarrative:input_type -> zee6do.v1.GetAINarrativeRequest
+	1,  // 10: zee6do.v1.AnalyticsService.GetMetrics:output_type -> zee6do.v1.GetMetricsResponse
+	4,  // 11: zee6do.v1.AnalyticsService.GetTimeBreakdown:output_type -> zee6do.v1.GetTimeBreakdownResponse
+	8,  // 12: zee6do.v1.AnalyticsService.GetAINarrative:output_type -> zee6do.v1.GetAINarrativeResponse
+	10, // [10:13] is the sub-list for method output_type
+	7,  // [7:10] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_zee6do_v1_analytics_service_proto_init() }
@@ -761,13 +701,14 @@ func file_zee6do_v1_analytics_service_proto_init() {
 	if File_zee6do_v1_analytics_service_proto != nil {
 		return
 	}
+	file_zee6do_v1_common_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_zee6do_v1_analytics_service_proto_rawDesc), len(file_zee6do_v1_analytics_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

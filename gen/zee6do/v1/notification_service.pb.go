@@ -337,7 +337,7 @@ var File_zee6do_v1_notification_service_proto protoreflect.FileDescriptor
 
 const file_zee6do_v1_notification_service_proto_rawDesc = "" +
 	"\n" +
-	"$zee6do/v1/notification_service.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1czee6do/v1/user_service.proto\"\x17\n" +
+	"$zee6do/v1/notification_service.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a\x16zee6do/v1/common.proto\"\x17\n" +
 	"\x15GetPreferencesRequest\"[\n" +
 	"\x16GetPreferencesResponse\x12A\n" +
 	"\vpreferences\x18\x01 \x01(\v2\x1f.zee6do.v1.NotificationSettingsR\vpreferences\"e\n" +
@@ -407,7 +407,7 @@ func file_zee6do_v1_notification_service_proto_init() {
 	if File_zee6do_v1_notification_service_proto != nil {
 		return
 	}
-	file_zee6do_v1_user_service_proto_init()
+	file_zee6do_v1_common_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

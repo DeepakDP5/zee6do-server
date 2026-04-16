@@ -1,4 +1,4 @@
-.PHONY: proto-gen proto-lint proto-breaking build test test-integration lint clean
+.PHONY: proto-gen proto-lint proto-breaking proto-dep-update build test test-integration lint tidy clean dev dev-stop help
 
 # Proto / Buf targets
 proto-gen: ## Generate Go code from proto definitions
@@ -8,7 +8,11 @@ proto-lint: ## Lint proto files
 	buf lint
 
 proto-breaking: ## Check for breaking proto changes against main
-	buf breaking --against '.git#branch=main'
+	@if git ls-tree -r --name-only main -- proto/ 2>/dev/null | grep -q '\.proto$$'; then \
+		buf breaking --against '.git#branch=main'; \
+	else \
+		echo "Skipping breaking change check: no .proto files found on main branch (initial import)."; \
+	fi
 
 proto-dep-update: ## Update buf.lock with latest dependency versions
 	buf dep update

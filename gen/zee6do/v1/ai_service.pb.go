@@ -10,6 +10,7 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -658,8 +659,8 @@ type Suggestion struct {
 	Message string `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
 	// Related task ID (if applicable).
 	TaskId string `protobuf:"bytes,4,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
-	// The action to perform if accepted (serialized as JSON).
-	ActionPayload string `protobuf:"bytes,5,opt,name=action_payload,json=actionPayload,proto3" json:"action_payload,omitempty"`
+	// The action to perform if accepted (structured JSON object).
+	ActionPayload *structpb.Struct `protobuf:"bytes,5,opt,name=action_payload,json=actionPayload,proto3" json:"action_payload,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -722,11 +723,11 @@ func (x *Suggestion) GetTaskId() string {
 	return ""
 }
 
-func (x *Suggestion) GetActionPayload() string {
+func (x *Suggestion) GetActionPayload() *structpb.Struct {
 	if x != nil {
 		return x.ActionPayload
 	}
-	return ""
+	return nil
 }
 
 type UndoActionRequest struct {
@@ -1085,7 +1086,7 @@ var File_zee6do_v1_ai_service_proto protoreflect.FileDescriptor
 
 const file_zee6do_v1_ai_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1azee6do/v1/ai_service.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16zee6do/v1/common.proto\x1a\x1czee6do/v1/task_service.proto\"Y\n" +
+	"\x1azee6do/v1/ai_service.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16zee6do/v1/common.proto\x1a\x1czee6do/v1/task_service.proto\"Y\n" +
 	"\vChatRequest\x12!\n" +
 	"\amessage\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\amessage\x12'\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\"\x99\x01\n" +
@@ -1125,14 +1126,14 @@ const file_zee6do_v1_ai_service_proto_rawDesc = "" +
 	"\x15GetSuggestionsRequest\x12\x18\n" +
 	"\acontext\x18\x01 \x01(\tR\acontext\"Q\n" +
 	"\x16GetSuggestionsResponse\x127\n" +
-	"\vsuggestions\x18\x01 \x03(\v2\x15.zee6do.v1.SuggestionR\vsuggestions\"\xa5\x01\n" +
+	"\vsuggestions\x18\x01 \x03(\v2\x15.zee6do.v1.SuggestionR\vsuggestions\"\xbe\x01\n" +
 	"\n" +
 	"Suggestion\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12-\n" +
 	"\x04type\x18\x02 \x01(\x0e2\x19.zee6do.v1.SuggestionTypeR\x04type\x12\x18\n" +
 	"\amessage\x18\x03 \x01(\tR\amessage\x12\x17\n" +
-	"\atask_id\x18\x04 \x01(\tR\x06taskId\x12%\n" +
-	"\x0eaction_payload\x18\x05 \x01(\tR\ractionPayload\"9\n" +
+	"\atask_id\x18\x04 \x01(\tR\x06taskId\x12>\n" +
+	"\x0eaction_payload\x18\x05 \x01(\v2\x17.google.protobuf.StructR\ractionPayload\"9\n" +
 	"\x11UndoActionRequest\x12$\n" +
 	"\taction_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bactionId\"6\n" +
 	"\x12UndoActionResponse\x12 \n" +
@@ -1213,7 +1214,8 @@ var file_zee6do_v1_ai_service_proto_goTypes = []any{
 	nil,                                    // 18: zee6do.v1.ParsedTask.FieldConfidenceEntry
 	(*timestamppb.Timestamp)(nil),          // 19: google.protobuf.Timestamp
 	(TaskPriority)(0),                      // 20: zee6do.v1.TaskPriority
-	(*Task)(nil),                           // 21: zee6do.v1.Task
+	(*structpb.Struct)(nil),                // 21: google.protobuf.Struct
+	(*Task)(nil),                           // 22: zee6do.v1.Task
 }
 var file_zee6do_v1_ai_service_proto_depIdxs = []int32{
 	4,  // 0: zee6do.v1.ChatResponse.actions:type_name -> zee6do.v1.AIAction
@@ -1225,27 +1227,28 @@ var file_zee6do_v1_ai_service_proto_depIdxs = []int32{
 	18, // 6: zee6do.v1.ParsedTask.field_confidence:type_name -> zee6do.v1.ParsedTask.FieldConfidenceEntry
 	10, // 7: zee6do.v1.GetSuggestionsResponse.suggestions:type_name -> zee6do.v1.Suggestion
 	1,  // 8: zee6do.v1.Suggestion.type:type_name -> zee6do.v1.SuggestionType
-	21, // 9: zee6do.v1.GenerateTemplateResponse.template_tasks:type_name -> zee6do.v1.Task
-	17, // 10: zee6do.v1.GetDailyPlanResponse.items:type_name -> zee6do.v1.DailyPlanItem
-	21, // 11: zee6do.v1.DailyPlanItem.task:type_name -> zee6do.v1.Task
-	19, // 12: zee6do.v1.DailyPlanItem.suggested_start:type_name -> google.protobuf.Timestamp
-	2,  // 13: zee6do.v1.AIService.Chat:input_type -> zee6do.v1.ChatRequest
-	5,  // 14: zee6do.v1.AIService.ProcessNaturalLanguage:input_type -> zee6do.v1.ProcessNaturalLanguageRequest
-	8,  // 15: zee6do.v1.AIService.GetSuggestions:input_type -> zee6do.v1.GetSuggestionsRequest
-	11, // 16: zee6do.v1.AIService.UndoAction:input_type -> zee6do.v1.UndoActionRequest
-	13, // 17: zee6do.v1.AIService.GenerateTemplate:input_type -> zee6do.v1.GenerateTemplateRequest
-	15, // 18: zee6do.v1.AIService.GetDailyPlan:input_type -> zee6do.v1.GetDailyPlanRequest
-	3,  // 19: zee6do.v1.AIService.Chat:output_type -> zee6do.v1.ChatResponse
-	6,  // 20: zee6do.v1.AIService.ProcessNaturalLanguage:output_type -> zee6do.v1.ProcessNaturalLanguageResponse
-	9,  // 21: zee6do.v1.AIService.GetSuggestions:output_type -> zee6do.v1.GetSuggestionsResponse
-	12, // 22: zee6do.v1.AIService.UndoAction:output_type -> zee6do.v1.UndoActionResponse
-	14, // 23: zee6do.v1.AIService.GenerateTemplate:output_type -> zee6do.v1.GenerateTemplateResponse
-	16, // 24: zee6do.v1.AIService.GetDailyPlan:output_type -> zee6do.v1.GetDailyPlanResponse
-	19, // [19:25] is the sub-list for method output_type
-	13, // [13:19] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	21, // 9: zee6do.v1.Suggestion.action_payload:type_name -> google.protobuf.Struct
+	22, // 10: zee6do.v1.GenerateTemplateResponse.template_tasks:type_name -> zee6do.v1.Task
+	17, // 11: zee6do.v1.GetDailyPlanResponse.items:type_name -> zee6do.v1.DailyPlanItem
+	22, // 12: zee6do.v1.DailyPlanItem.task:type_name -> zee6do.v1.Task
+	19, // 13: zee6do.v1.DailyPlanItem.suggested_start:type_name -> google.protobuf.Timestamp
+	2,  // 14: zee6do.v1.AIService.Chat:input_type -> zee6do.v1.ChatRequest
+	5,  // 15: zee6do.v1.AIService.ProcessNaturalLanguage:input_type -> zee6do.v1.ProcessNaturalLanguageRequest
+	8,  // 16: zee6do.v1.AIService.GetSuggestions:input_type -> zee6do.v1.GetSuggestionsRequest
+	11, // 17: zee6do.v1.AIService.UndoAction:input_type -> zee6do.v1.UndoActionRequest
+	13, // 18: zee6do.v1.AIService.GenerateTemplate:input_type -> zee6do.v1.GenerateTemplateRequest
+	15, // 19: zee6do.v1.AIService.GetDailyPlan:input_type -> zee6do.v1.GetDailyPlanRequest
+	3,  // 20: zee6do.v1.AIService.Chat:output_type -> zee6do.v1.ChatResponse
+	6,  // 21: zee6do.v1.AIService.ProcessNaturalLanguage:output_type -> zee6do.v1.ProcessNaturalLanguageResponse
+	9,  // 22: zee6do.v1.AIService.GetSuggestions:output_type -> zee6do.v1.GetSuggestionsResponse
+	12, // 23: zee6do.v1.AIService.UndoAction:output_type -> zee6do.v1.UndoActionResponse
+	14, // 24: zee6do.v1.AIService.GenerateTemplate:output_type -> zee6do.v1.GenerateTemplateResponse
+	16, // 25: zee6do.v1.AIService.GetDailyPlan:output_type -> zee6do.v1.GetDailyPlanResponse
+	20, // [20:26] is the sub-list for method output_type
+	14, // [14:20] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_zee6do_v1_ai_service_proto_init() }

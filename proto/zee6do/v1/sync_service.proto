@@ -30,10 +30,12 @@ message PullChangesResponse {
 }
 
 // Changes for a single WatermelonDB collection.
+// NOTE: created/updated use repeated bytes intentionally for WatermelonDB sync protocol
+// compatibility. Each entry is an opaque JSON blob whose schema varies per collection.
 message SyncCollectionChanges {
-  // Records created since last_pulled_at (full JSON representation).
+  // Records created since last_pulled_at (full JSON representation as opaque bytes for WatermelonDB compatibility).
   repeated bytes created = 1;
-  // Records updated since last_pulled_at (full JSON representation).
+  // Records updated since last_pulled_at (full JSON representation as opaque bytes for WatermelonDB compatibility).
   repeated bytes updated = 2;
   // IDs of records deleted since last_pulled_at.
   repeated string deleted = 3;
