@@ -46,7 +46,7 @@ func NewLogger(level string) *zap.Logger {
 		ErrorOutputPaths: []string{"stderr"},
 	}
 
-	logger, err := cfg.Build(zap.AddCallerSkip(0))
+	logger, err := cfg.Build()
 	if err != nil {
 		panic("logging: failed to build logger: " + err.Error())
 	}

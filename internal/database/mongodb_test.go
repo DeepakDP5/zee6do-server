@@ -1,20 +1,11 @@
 package database
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
+	"github.com/DeepakDP5/zee6do-server/internal/server"
 )
 
-// NewMongoClient requires a live MongoDB connection, so integration tests
-// are run with docker-compose in CI. Unit tests here cover the struct API.
-
-func TestMongoClient_nil_safety(t *testing.T) {
-	// Verify the struct fields and methods exist with correct signatures.
-	// Actual connection tests require a running MongoDB instance.
-	var mc *MongoClient
-	assert.Nil(t, mc)
-}
+// Compile-time interface check: MongoClient must satisfy server.Shutdownable.
+var _ server.Shutdownable = (*MongoClient)(nil)
 
 // Integration tests for NewMongoClient, HealthCheck, and Close require a
 // real MongoDB instance. They are tested via docker-compose in CI:

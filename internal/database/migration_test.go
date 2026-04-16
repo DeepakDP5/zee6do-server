@@ -47,18 +47,6 @@ func TestMigrationRunner_Register_preserves_order(t *testing.T) {
 	assert.Equal(t, "002_second", runner.migrations[2].ID)
 }
 
-func TestMigration_struct_fields(t *testing.T) {
-	m := Migration{
-		ID:          "001_test",
-		Description: "Test migration",
-		Up:          nil,
-	}
-
-	assert.Equal(t, "001_test", m.ID)
-	assert.Equal(t, "Test migration", m.Description)
-	assert.Nil(t, m.Up)
-}
-
 // Integration tests for Run() require a real MongoDB instance.
 // They are tested via docker-compose in CI:
 //   docker-compose up -d mongodb

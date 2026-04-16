@@ -38,22 +38,3 @@ func Wrapf(err error, format string, args ...any) error {
 	}
 	return fmt.Errorf("%s: %w", fmt.Sprintf(format, args...), err)
 }
-
-// Is reports whether any error in err's tree matches target.
-// Re-exported from the standard library for convenience.
-func Is(err, target error) bool {
-	return errors.Is(err, target)
-}
-
-// As finds the first error in err's tree that matches target,
-// and if so, sets target to that error value and returns true.
-// Re-exported from the standard library for convenience.
-func As(err error, target any) bool {
-	return errors.As(err, target)
-}
-
-// New creates a new error with the given text.
-// Re-exported from the standard library for convenience.
-func New(text string) error {
-	return errors.New(text)
-}

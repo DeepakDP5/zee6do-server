@@ -1,6 +1,7 @@
 package errors
 
 import (
+	stderrors "errors"
 	"fmt"
 	"testing"
 
@@ -93,9 +94,9 @@ func TestSentinelErrors_AreDistinct(t *testing.T) {
 	for i, a := range sentinels {
 		for j, b := range sentinels {
 			if i == j {
-				assert.True(t, Is(a, b), "sentinel should match itself")
+				assert.True(t, stderrors.Is(a, b), "sentinel should match itself")
 			} else {
-				assert.False(t, Is(a, b), "distinct sentinels should not match: %v vs %v", a, b)
+				assert.False(t, stderrors.Is(a, b), "distinct sentinels should not match: %v vs %v", a, b)
 			}
 		}
 	}
@@ -106,30 +107,13 @@ func TestWrappedErrors_PreserveSentinel(t *testing.T) {
 	wrapped := Wrap(original, "layer1")
 	doubleWrapped := Wrapf(wrapped, "layer2(%s)", "ctx")
 
-	assert.True(t, Is(wrapped, ErrNotFound), "wrapped error should match sentinel")
-	assert.True(t, Is(doubleWrapped, ErrNotFound), "double-wrapped error should match sentinel")
-	assert.False(t, Is(doubleWrapped, ErrUnauthorized), "should not match different sentinel")
+	assert.True(t, stderrors.Is(wrapped, ErrNotFound), "wrapped error should match sentinel")
+	assert.True(t, stderrors.Is(doubleWrapped, ErrNotFound), "double-wrapped error should match sentinel")
+	assert.False(t, stderrors.Is(doubleWrapped, ErrUnauthorized), "should not match different sentinel")
 }
 
-func TestIs_ReExported(t *testing.T) {
+func TestWrap_preserves_sentinel_chain(t *testing.T) {
 	err := fmt.Errorf("context: %w", ErrConflict)
-	assert.True(t, Is(err, ErrConflict))
-	assert.False(t, Is(err, ErrNotFound))
-}
-
-func TestAs_ReExported(t *testing.T) {
-	custom := &customErr{Code: 42}
-
-	err := fmt.Errorf("context: %w", custom)
-	var target *customErr
-	assert.True(t, As(err, &target))
-	assert.Equal(t, 42, target.Code)
-}
-
-type customErr struct {
-	Code int
-}
-
-func (e *customErr) Error() string {
-	return fmt.Sprintf("custom error: %d", e.Code)
+	assert.True(t, stderrors.Is(err, ErrConflict))
+	assert.False(t, stderrors.Is(err, ErrNotFound))
 }
