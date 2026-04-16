@@ -31,15 +31,6 @@ func (t *testValidator) ValidateToken(_ context.Context, token string) (string, 
 	return "", fmt.Errorf("invalid token")
 }
 
-// testHealthIndicator implements HealthIndicator for tests.
-type testHealthIndicator struct {
-	healthy bool
-}
-
-func (h *testHealthIndicator) IsHealthy() bool {
-	return h.healthy
-}
-
 // newTestServer creates a gRPC server with the test interceptor stack and a health
 // service registered. If skipMethods is nil, the default skip list (health check) is used.
 func newTestServer(t *testing.T, port int, skipMethods map[string]bool) (*Server, *observer.ObservedLogs) {
@@ -67,8 +58,7 @@ func newTestServer(t *testing.T, port int, skipMethods map[string]bool) (*Server
 		SkipMethods: skipMethods,
 	}
 
-	hc := &testHealthIndicator{healthy: true}
-	srv := NewServer(cfg, logger, authCfg, hc)
+	srv := NewServer(cfg, logger, authCfg)
 
 	return srv, logs
 }
