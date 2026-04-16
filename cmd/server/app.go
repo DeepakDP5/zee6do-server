@@ -78,6 +78,13 @@ func provideAuthConfig(cfg *config.Config) middleware.AuthConfig {
 	return middleware.AuthConfig{
 		Validator: validator,
 		SkipMethods: map[string]bool{
+			// gRPC health protocol — used by load balancers, Kubernetes probes, and
+			// monitoring systems. These must never require authentication.
+			"/grpc.health.v1.Health/Check": true,
+			"/grpc.health.v1.Health/Watch": true,
+			"/grpc.health.v1.Health/List":  true,
+
+			// Application auth endpoints — unauthenticated by design.
 			"/zee6do.v1.AuthService/SendOTP":     true,
 			"/zee6do.v1.AuthService/VerifyOTP":    true,
 			"/zee6do.v1.AuthService/SocialLogin":  true,
