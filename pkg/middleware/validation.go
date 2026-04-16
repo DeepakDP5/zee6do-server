@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"sync"
 
 	"buf.build/go/protovalidate"
 	"google.golang.org/grpc"
@@ -10,11 +11,26 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// sharedValidator is a package-level protovalidate.Validator created once and
+// shared between the unary and stream validation interceptors. The validator
+// is stateless and safe for concurrent use.
+var (
+	sharedValidator     protovalidate.Validator
+	sharedValidatorOnce sync.Once
+)
+
+func getSharedValidator() protovalidate.Validator {
+	sharedValidatorOnce.Do(func() {
+		sharedValidator = mustNewValidator()
+	})
+	return sharedValidator
+}
+
 // UnaryValidation returns a unary server interceptor that validates incoming
 // request messages using buf protovalidate annotations defined in proto files.
 // Invalid requests are rejected with codes.InvalidArgument before hitting the handler.
 func UnaryValidation() grpc.UnaryServerInterceptor {
-	validator := mustNewValidator()
+	validator := getSharedValidator()
 
 	return func(
 		ctx context.Context,
@@ -36,7 +52,7 @@ func UnaryValidation() grpc.UnaryServerInterceptor {
 // responsibility to validate). This interceptor is provided for completeness
 // with client-streaming or bidirectional RPCs where RecvMsg validation is needed.
 func StreamValidation() grpc.StreamServerInterceptor {
-	validator := mustNewValidator()
+	validator := getSharedValidator()
 
 	return func(
 		srv any,

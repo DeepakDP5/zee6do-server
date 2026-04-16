@@ -62,11 +62,21 @@ func provideLogger(cfg *config.Config) *zap.Logger {
 }
 
 // provideAuthConfig builds the auth interceptor configuration.
-// The JWTValidator is a placeholder that accepts any token until the
-// auth module provides a real implementation.
-func provideAuthConfig() middleware.AuthConfig {
+// In development, a placeholder validator accepts any token. In staging/production
+// the placeholder is rejected at startup to fail closed — a real validator must be
+// wired before deploying outside development.
+func provideAuthConfig(cfg *config.Config) middleware.AuthConfig {
+	var validator middleware.JWTValidator
+	if cfg.Server.Environment == "development" {
+		validator = &placeholderValidator{}
+	} else {
+		// Fail closed: no real validator means no authenticated RPCs can succeed.
+		// This will be replaced when the auth module (Task 3) is implemented.
+		validator = &rejectAllValidator{}
+	}
+
 	return middleware.AuthConfig{
-		Validator: &placeholderValidator{},
+		Validator: validator,
 		SkipMethods: map[string]bool{
 			"/zee6do.v1.AuthService/SendOTP":     true,
 			"/zee6do.v1.AuthService/VerifyOTP":    true,
@@ -77,16 +87,25 @@ func provideAuthConfig() middleware.AuthConfig {
 	}
 }
 
+// rejectAllValidator rejects all tokens. Used in staging/production when no
+// real JWT validator has been wired yet, ensuring the system fails closed.
+type rejectAllValidator struct{}
+
+func (r *rejectAllValidator) ValidateToken(_ context.Context, _ string) (string, error) {
+	return "", fmt.Errorf("no JWT validator configured for this environment")
+}
+
 // placeholderValidator is a temporary JWT validator used during bootstrap
-// before the auth module is implemented. It accepts any non-empty token
-// and returns "placeholder-user" as the user ID.
+// before the auth module is implemented. It accepts any token and returns
+// "placeholder-user" as the user ID.
+//
+// NOTE: The auth interceptor already guards against empty tokens before
+// calling ValidateToken, so no empty-token check is needed here.
+//
+// WARNING: This validator is development-only. It must be replaced with
+// real JWT validation before staging/production use. See Review item #1.
 type placeholderValidator struct{}
 
-func (p *placeholderValidator) ValidateToken(_ context.Context, token string) (string, error) {
-	// Placeholder: accept any non-empty token.
-	// The auth module (Task 3) will replace this with real JWT validation.
-	if token == "" {
-		return "", fmt.Errorf("empty token")
-	}
+func (p *placeholderValidator) ValidateToken(_ context.Context, _ string) (string, error) {
 	return "placeholder-user", nil
 }

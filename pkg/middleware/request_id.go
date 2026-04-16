@@ -64,13 +64,3 @@ func injectRequestID(ctx context.Context) context.Context {
 	}
 	return context.WithValue(ctx, requestIDKey{}, uuid.New().String())
 }
-
-// wrappedServerStream wraps grpc.ServerStream to override Context().
-type wrappedServerStream struct {
-	grpc.ServerStream
-	ctx context.Context
-}
-
-func (w *wrappedServerStream) Context() context.Context {
-	return w.ctx
-}

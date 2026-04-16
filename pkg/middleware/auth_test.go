@@ -19,7 +19,7 @@ type fakeJWTValidator struct {
 	err    error
 }
 
-func (f *fakeJWTValidator) ValidateToken(_ context.Context, token string) (string, error) {
+func (f *fakeJWTValidator) ValidateToken(_ context.Context, _ string) (string, error) {
 	if f.err != nil {
 		return "", f.err
 	}

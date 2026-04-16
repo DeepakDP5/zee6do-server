@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -117,5 +118,14 @@ func authenticate(ctx context.Context, validator JWTValidator) (context.Context,
 		return ctx, status.Error(codes.Unauthenticated, "invalid token")
 	}
 
-	return withUserID(ctx, userID), nil
+	ctx = withUserID(ctx, userID)
+
+	// Add user_id to the shared log-fields holder so the logging interceptor's
+	// completion log includes the authenticated user, even though it holds
+	// the parent context (not auth's enriched child context).
+	if lf := logFieldsFromContext(ctx); lf != nil {
+		lf.AddField(zap.String("user_id", userID))
+	}
+
+	return ctx, nil
 }
