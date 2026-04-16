@@ -17,7 +17,7 @@ linters:
         - performance
     gosec:
       excludes:
-        - G104
+        - G104 # duplicate of errcheck
     revive:
       rules:
         - name: blank-imports
@@ -63,10 +63,4 @@ linters:
       - third_party$
       - builtin$
       - examples$
-formatters:
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+
