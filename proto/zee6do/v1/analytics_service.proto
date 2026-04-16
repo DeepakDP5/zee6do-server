@@ -6,6 +6,7 @@ option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
 
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
+import "zee6do/v1/common.proto";
 
 // AnalyticsService provides productivity metrics, time analysis, and AI-generated narratives.
 service AnalyticsService {
@@ -15,14 +16,6 @@ service AnalyticsService {
   rpc GetTimeBreakdown(GetTimeBreakdownRequest) returns (GetTimeBreakdownResponse);
   // GetAINarrative generates a natural language summary of productivity data.
   rpc GetAINarrative(GetAINarrativeRequest) returns (GetAINarrativeResponse);
-}
-
-// Date range for analytics queries.
-message DateRange {
-  // Start of the range (inclusive).
-  google.protobuf.Timestamp start = 1 [(buf.validate.field).required = true];
-  // End of the range (inclusive).
-  google.protobuf.Timestamp end = 2 [(buf.validate.field).required = true];
 }
 
 message GetMetricsRequest {

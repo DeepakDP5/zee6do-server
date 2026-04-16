@@ -5,6 +5,7 @@ package zee6do.v1;
 option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
 
 import "buf/validate/validate.proto";
+import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "zee6do/v1/common.proto";
 import "zee6do/v1/task_service.proto";
@@ -120,8 +121,8 @@ message Suggestion {
   string message = 3;
   // Related task ID (if applicable).
   string task_id = 4;
-  // The action to perform if accepted (serialized as JSON).
-  string action_payload = 5;
+  // The action to perform if accepted (structured JSON object).
+  google.protobuf.Struct action_payload = 5;
 }
 
 // Types of AI suggestions.

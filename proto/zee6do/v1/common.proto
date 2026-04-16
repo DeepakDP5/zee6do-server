@@ -4,10 +4,13 @@ package zee6do.v1;
 
 option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
 
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
 // Pagination request parameters for list operations.
 message Pagination {
   // Maximum number of items to return per page. Must be between 1 and 100.
-  int32 page_size = 1;
+  int32 page_size = 1 [(buf.validate.field).int32 = {gte: 1, lte: 100}];
   // Opaque token for fetching the next page. Empty for the first page.
   string page_token = 2;
 }
@@ -47,6 +50,9 @@ enum TaskPriority {
 }
 
 // Origin source of a task.
+// NOTE: TaskSource, ConnectorType, and KnowledgeSourceType (in knowledge_service.proto)
+// share overlapping integration values (SLACK, EMAIL, CLICKUP). When adding a new
+// integration, check all three enums to keep them in sync.
 enum TaskSource {
   TASK_SOURCE_UNSPECIFIED = 0;
   TASK_SOURCE_MANUAL = 1;
@@ -58,10 +64,55 @@ enum TaskSource {
 }
 
 // Type of external connector integration.
+// NOTE: ConnectorType, TaskSource, and KnowledgeSourceType (in knowledge_service.proto)
+// share overlapping integration values (SLACK, EMAIL, CLICKUP). When adding a new
+// integration, check all three enums to keep them in sync.
 enum ConnectorType {
   CONNECTOR_TYPE_UNSPECIFIED = 0;
   CONNECTOR_TYPE_GOOGLE_CALENDAR = 1;
   CONNECTOR_TYPE_SLACK = 2;
   CONNECTOR_TYPE_EMAIL = 3;
   CONNECTOR_TYPE_CLICKUP = 4;
+}
+
+// User profile. Core domain entity shared across services.
+message User {
+  // Unique user identifier.
+  string id = 1;
+  // Phone number (E.164 format).
+  string phone = 2;
+  // Email address (optional).
+  string email = 3;
+  // Display name.
+  string name = 4;
+  // Avatar image URL.
+  string avatar_url = 5;
+  // When the account was created.
+  google.protobuf.Timestamp created_at = 6;
+}
+
+// Notification toggle settings.
+message NotificationSettings {
+  // Enable morning briefing notifications.
+  bool morning_briefing = 1;
+  // Enable task reminder notifications.
+  bool reminders = 2;
+  // Enable deadline alert notifications.
+  bool deadlines = 3;
+  // Enable connector alert notifications.
+  bool connector_alerts = 4;
+  // Enable daily summary notifications.
+  bool daily_summary = 5;
+  // Quiet hours start (24h format, e.g., "22:00").
+  string quiet_hours_start = 6;
+  // Quiet hours end (24h format, e.g., "07:00").
+  string quiet_hours_end = 7;
+}
+
+// Date range for time-bounded queries.
+message DateRange {
+  // Start of the range (inclusive).
+  google.protobuf.Timestamp start = 1 [(buf.validate.field).required = true];
+  // End of the range (inclusive).
+  google.protobuf.Timestamp end = 2 [(buf.validate.field).required = true];
 }

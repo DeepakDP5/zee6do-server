@@ -5,7 +5,7 @@ package zee6do.v1;
 option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
 
 import "buf/validate/validate.proto";
-import "zee6do/v1/user_service.proto";
+import "zee6do/v1/common.proto";
 
 // NotificationService manages push notification preferences and device registration.
 service NotificationService {

@@ -7,7 +7,7 @@ option go_package = "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1;zee6dov1";
 import "buf/validate/validate.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
-import "zee6do/v1/auth_service.proto";
+import "zee6do/v1/common.proto";
 
 // UserService manages user profiles, preferences, data export, and account deletion.
 service UserService {
@@ -91,20 +91,3 @@ enum ThemePreference {
   THEME_PREFERENCE_DARK = 2;
 }
 
-// Notification toggle settings.
-message NotificationSettings {
-  // Enable morning briefing notifications.
-  bool morning_briefing = 1;
-  // Enable task reminder notifications.
-  bool reminders = 2;
-  // Enable deadline alert notifications.
-  bool deadlines = 3;
-  // Enable connector alert notifications.
-  bool connector_alerts = 4;
-  // Enable daily summary notifications.
-  bool daily_summary = 5;
-  // Quiet hours start (24h format, e.g., "22:00").
-  string quiet_hours_start = 6;
-  // Quiet hours end (24h format, e.g., "07:00").
-  string quiet_hours_end = 7;
-}

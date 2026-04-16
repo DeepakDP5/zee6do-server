@@ -847,104 +847,13 @@ func (x *Device) GetIsCurrent() bool {
 	return false
 }
 
-// User profile returned in auth responses. Minimal representation.
-type User struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Unique user identifier.
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// Phone number (E.164 format).
-	Phone string `protobuf:"bytes,2,opt,name=phone,proto3" json:"phone,omitempty"`
-	// Email address (optional).
-	Email string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	// Display name.
-	Name string `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	// Avatar image URL.
-	AvatarUrl string `protobuf:"bytes,5,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
-	// When the account was created.
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *User) Reset() {
-	*x = User{}
-	mi := &file_zee6do_v1_auth_service_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *User) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*User) ProtoMessage() {}
-
-func (x *User) ProtoReflect() protoreflect.Message {
-	mi := &file_zee6do_v1_auth_service_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use User.ProtoReflect.Descriptor instead.
-func (*User) Descriptor() ([]byte, []int) {
-	return file_zee6do_v1_auth_service_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *User) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *User) GetPhone() string {
-	if x != nil {
-		return x.Phone
-	}
-	return ""
-}
-
-func (x *User) GetEmail() string {
-	if x != nil {
-		return x.Email
-	}
-	return ""
-}
-
-func (x *User) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *User) GetAvatarUrl() string {
-	if x != nil {
-		return x.AvatarUrl
-	}
-	return ""
-}
-
-func (x *User) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
 var File_zee6do_v1_auth_service_proto protoreflect.FileDescriptor
 
 const file_zee6do_v1_auth_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1czee6do/v1/auth_service.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"<\n" +
-	"\x0eSendOTPRequest\x12*\n" +
-	"\fphone_number\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\bR\vphoneNumber\"c\n" +
+	"\x1czee6do/v1/auth_service.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16zee6do/v1/common.proto\"M\n" +
+	"\x0eSendOTPRequest\x12;\n" +
+	"\fphone_number\x18\x01 \x01(\tB\x18\xbaH\x15r\x132\x11^\\+[1-9]\\d{6,14}$R\vphoneNumber\"c\n" +
 	"\x0fSendOTPResponse\x12\x15\n" +
 	"\x06otp_id\x18\x01 \x01(\tR\x05otpId\x129\n" +
 	"\n" +
@@ -987,16 +896,7 @@ const file_zee6do_v1_auth_service_proto_rawDesc = "" +
 	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12@\n" +
 	"\x0elast_active_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\flastActiveAt\x12\x1d\n" +
 	"\n" +
-	"is_current\x18\x05 \x01(\bR\tisCurrent\"\xb0\x01\n" +
-	"\x04User\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05phone\x18\x02 \x01(\tR\x05phone\x12\x14\n" +
-	"\x05email\x18\x03 \x01(\tR\x05email\x12\x12\n" +
-	"\x04name\x18\x04 \x01(\tR\x04name\x12\x1d\n" +
-	"\n" +
-	"avatar_url\x18\x05 \x01(\tR\tavatarUrl\x129\n" +
-	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt*h\n" +
+	"is_current\x18\x05 \x01(\bR\tisCurrent*h\n" +
 	"\x0eSocialProvider\x12\x1f\n" +
 	"\x1bSOCIAL_PROVIDER_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16SOCIAL_PROVIDER_GOOGLE\x10\x01\x12\x19\n" +
@@ -1023,7 +923,7 @@ func file_zee6do_v1_auth_service_proto_rawDescGZIP() []byte {
 }
 
 var file_zee6do_v1_auth_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_zee6do_v1_auth_service_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_zee6do_v1_auth_service_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_zee6do_v1_auth_service_proto_goTypes = []any{
 	(SocialProvider)(0),           // 0: zee6do.v1.SocialProvider
 	(*SendOTPRequest)(nil),        // 1: zee6do.v1.SendOTPRequest
@@ -1041,37 +941,36 @@ var file_zee6do_v1_auth_service_proto_goTypes = []any{
 	(*LogoutRequest)(nil),         // 13: zee6do.v1.LogoutRequest
 	(*LogoutResponse)(nil),        // 14: zee6do.v1.LogoutResponse
 	(*Device)(nil),                // 15: zee6do.v1.Device
-	(*User)(nil),                  // 16: zee6do.v1.User
-	(*timestamppb.Timestamp)(nil), // 17: google.protobuf.Timestamp
+	(*timestamppb.Timestamp)(nil), // 16: google.protobuf.Timestamp
+	(*User)(nil),                  // 17: zee6do.v1.User
 }
 var file_zee6do_v1_auth_service_proto_depIdxs = []int32{
-	17, // 0: zee6do.v1.SendOTPResponse.expires_at:type_name -> google.protobuf.Timestamp
-	16, // 1: zee6do.v1.VerifyOTPResponse.user:type_name -> zee6do.v1.User
+	16, // 0: zee6do.v1.SendOTPResponse.expires_at:type_name -> google.protobuf.Timestamp
+	17, // 1: zee6do.v1.VerifyOTPResponse.user:type_name -> zee6do.v1.User
 	0,  // 2: zee6do.v1.SocialLoginRequest.provider:type_name -> zee6do.v1.SocialProvider
-	16, // 3: zee6do.v1.SocialLoginResponse.user:type_name -> zee6do.v1.User
+	17, // 3: zee6do.v1.SocialLoginResponse.user:type_name -> zee6do.v1.User
 	15, // 4: zee6do.v1.ListDevicesResponse.devices:type_name -> zee6do.v1.Device
-	17, // 5: zee6do.v1.Device.created_at:type_name -> google.protobuf.Timestamp
-	17, // 6: zee6do.v1.Device.last_active_at:type_name -> google.protobuf.Timestamp
-	17, // 7: zee6do.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	1,  // 8: zee6do.v1.AuthService.SendOTP:input_type -> zee6do.v1.SendOTPRequest
-	3,  // 9: zee6do.v1.AuthService.VerifyOTP:input_type -> zee6do.v1.VerifyOTPRequest
-	5,  // 10: zee6do.v1.AuthService.SocialLogin:input_type -> zee6do.v1.SocialLoginRequest
-	7,  // 11: zee6do.v1.AuthService.RefreshToken:input_type -> zee6do.v1.RefreshTokenRequest
-	9,  // 12: zee6do.v1.AuthService.ListDevices:input_type -> zee6do.v1.ListDevicesRequest
-	11, // 13: zee6do.v1.AuthService.RevokeDevice:input_type -> zee6do.v1.RevokeDeviceRequest
-	13, // 14: zee6do.v1.AuthService.Logout:input_type -> zee6do.v1.LogoutRequest
-	2,  // 15: zee6do.v1.AuthService.SendOTP:output_type -> zee6do.v1.SendOTPResponse
-	4,  // 16: zee6do.v1.AuthService.VerifyOTP:output_type -> zee6do.v1.VerifyOTPResponse
-	6,  // 17: zee6do.v1.AuthService.SocialLogin:output_type -> zee6do.v1.SocialLoginResponse
-	8,  // 18: zee6do.v1.AuthService.RefreshToken:output_type -> zee6do.v1.RefreshTokenResponse
-	10, // 19: zee6do.v1.AuthService.ListDevices:output_type -> zee6do.v1.ListDevicesResponse
-	12, // 20: zee6do.v1.AuthService.RevokeDevice:output_type -> zee6do.v1.RevokeDeviceResponse
-	14, // 21: zee6do.v1.AuthService.Logout:output_type -> zee6do.v1.LogoutResponse
-	15, // [15:22] is the sub-list for method output_type
-	8,  // [8:15] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	16, // 5: zee6do.v1.Device.created_at:type_name -> google.protobuf.Timestamp
+	16, // 6: zee6do.v1.Device.last_active_at:type_name -> google.protobuf.Timestamp
+	1,  // 7: zee6do.v1.AuthService.SendOTP:input_type -> zee6do.v1.SendOTPRequest
+	3,  // 8: zee6do.v1.AuthService.VerifyOTP:input_type -> zee6do.v1.VerifyOTPRequest
+	5,  // 9: zee6do.v1.AuthService.SocialLogin:input_type -> zee6do.v1.SocialLoginRequest
+	7,  // 10: zee6do.v1.AuthService.RefreshToken:input_type -> zee6do.v1.RefreshTokenRequest
+	9,  // 11: zee6do.v1.AuthService.ListDevices:input_type -> zee6do.v1.ListDevicesRequest
+	11, // 12: zee6do.v1.AuthService.RevokeDevice:input_type -> zee6do.v1.RevokeDeviceRequest
+	13, // 13: zee6do.v1.AuthService.Logout:input_type -> zee6do.v1.LogoutRequest
+	2,  // 14: zee6do.v1.AuthService.SendOTP:output_type -> zee6do.v1.SendOTPResponse
+	4,  // 15: zee6do.v1.AuthService.VerifyOTP:output_type -> zee6do.v1.VerifyOTPResponse
+	6,  // 16: zee6do.v1.AuthService.SocialLogin:output_type -> zee6do.v1.SocialLoginResponse
+	8,  // 17: zee6do.v1.AuthService.RefreshToken:output_type -> zee6do.v1.RefreshTokenResponse
+	10, // 18: zee6do.v1.AuthService.ListDevices:output_type -> zee6do.v1.ListDevicesResponse
+	12, // 19: zee6do.v1.AuthService.RevokeDevice:output_type -> zee6do.v1.RevokeDeviceResponse
+	14, // 20: zee6do.v1.AuthService.Logout:output_type -> zee6do.v1.LogoutResponse
+	14, // [14:21] is the sub-list for method output_type
+	7,  // [7:14] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_zee6do_v1_auth_service_proto_init() }
@@ -1079,13 +978,14 @@ func file_zee6do_v1_auth_service_proto_init() {
 	if File_zee6do_v1_auth_service_proto != nil {
 		return
 	}
+	file_zee6do_v1_common_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_zee6do_v1_auth_service_proto_rawDesc), len(file_zee6do_v1_auth_service_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   16,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

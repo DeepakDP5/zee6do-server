@@ -21,6 +21,9 @@ service KnowledgeService {
 }
 
 // Source type for a knowledge base document.
+// NOTE: KnowledgeSourceType, ConnectorType, and TaskSource (in common.proto)
+// share overlapping integration values (SLACK, EMAIL, CLICKUP). When adding a new
+// integration, check all three enums to keep them in sync.
 enum KnowledgeSourceType {
   KNOWLEDGE_SOURCE_TYPE_UNSPECIFIED = 0;
   KNOWLEDGE_SOURCE_TYPE_MANUAL = 1;

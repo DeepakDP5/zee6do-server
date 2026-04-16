@@ -131,10 +131,8 @@ func (ScheduleConflictResolution) EnumDescriptor() ([]byte, []int) {
 
 type GetAgendaViewRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Start of the date range.
-	Start *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=start,proto3" json:"start,omitempty"`
-	// End of the date range.
-	End           *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=end,proto3" json:"end,omitempty"`
+	// Date range for the agenda view.
+	DateRange     *DateRange `protobuf:"bytes,1,opt,name=date_range,json=dateRange,proto3" json:"date_range,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -169,16 +167,9 @@ func (*GetAgendaViewRequest) Descriptor() ([]byte, []int) {
 	return file_zee6do_v1_scheduler_service_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GetAgendaViewRequest) GetStart() *timestamppb.Timestamp {
+func (x *GetAgendaViewRequest) GetDateRange() *DateRange {
 	if x != nil {
-		return x.Start
-	}
-	return nil
-}
-
-func (x *GetAgendaViewRequest) GetEnd() *timestamppb.Timestamp {
-	if x != nil {
-		return x.End
+		return x.DateRange
 	}
 	return nil
 }
@@ -603,10 +594,10 @@ var File_zee6do_v1_scheduler_service_proto protoreflect.FileDescriptor
 
 const file_zee6do_v1_scheduler_service_proto_rawDesc = "" +
 	"\n" +
-	"!zee6do/v1/scheduler_service.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1czee6do/v1/task_service.proto\"\x86\x01\n" +
-	"\x14GetAgendaViewRequest\x128\n" +
-	"\x05start\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\x05start\x124\n" +
-	"\x03end\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\x03end\"D\n" +
+	"!zee6do/v1/scheduler_service.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16zee6do/v1/common.proto\x1a\x1czee6do/v1/task_service.proto\"S\n" +
+	"\x14GetAgendaViewRequest\x12;\n" +
+	"\n" +
+	"date_range\x18\x01 \x01(\v2\x14.zee6do.v1.DateRangeB\x06\xbaH\x03\xc8\x01\x01R\tdateRange\"D\n" +
 	"\x15GetAgendaViewResponse\x12+\n" +
 	"\x05items\x18\x01 \x03(\v2\x15.zee6do.v1.AgendaItemR\x05items\"\xa0\x02\n" +
 	"\n" +
@@ -678,34 +669,34 @@ var file_zee6do_v1_scheduler_service_proto_goTypes = []any{
 	(*RescheduleTaskResponse)(nil),  // 7: zee6do.v1.RescheduleTaskResponse
 	(*ResolveConflictRequest)(nil),  // 8: zee6do.v1.ResolveConflictRequest
 	(*ResolveConflictResponse)(nil), // 9: zee6do.v1.ResolveConflictResponse
-	(*timestamppb.Timestamp)(nil),   // 10: google.protobuf.Timestamp
+	(*DateRange)(nil),               // 10: zee6do.v1.DateRange
 	(*Task)(nil),                    // 11: zee6do.v1.Task
+	(*timestamppb.Timestamp)(nil),   // 12: google.protobuf.Timestamp
 }
 var file_zee6do_v1_scheduler_service_proto_depIdxs = []int32{
-	10, // 0: zee6do.v1.GetAgendaViewRequest.start:type_name -> google.protobuf.Timestamp
-	10, // 1: zee6do.v1.GetAgendaViewRequest.end:type_name -> google.protobuf.Timestamp
-	4,  // 2: zee6do.v1.GetAgendaViewResponse.items:type_name -> zee6do.v1.AgendaItem
-	0,  // 3: zee6do.v1.AgendaItem.type:type_name -> zee6do.v1.AgendaItemType
-	11, // 4: zee6do.v1.AgendaItem.task:type_name -> zee6do.v1.Task
-	5,  // 5: zee6do.v1.AgendaItem.event:type_name -> zee6do.v1.CalendarEvent
-	10, // 6: zee6do.v1.AgendaItem.start_time:type_name -> google.protobuf.Timestamp
-	10, // 7: zee6do.v1.AgendaItem.end_time:type_name -> google.protobuf.Timestamp
-	10, // 8: zee6do.v1.CalendarEvent.start_time:type_name -> google.protobuf.Timestamp
-	10, // 9: zee6do.v1.CalendarEvent.end_time:type_name -> google.protobuf.Timestamp
-	10, // 10: zee6do.v1.RescheduleTaskRequest.new_date:type_name -> google.protobuf.Timestamp
-	11, // 11: zee6do.v1.RescheduleTaskResponse.task:type_name -> zee6do.v1.Task
-	1,  // 12: zee6do.v1.ResolveConflictRequest.resolution:type_name -> zee6do.v1.ScheduleConflictResolution
-	2,  // 13: zee6do.v1.SchedulerService.GetAgendaView:input_type -> zee6do.v1.GetAgendaViewRequest
-	6,  // 14: zee6do.v1.SchedulerService.RescheduleTask:input_type -> zee6do.v1.RescheduleTaskRequest
-	8,  // 15: zee6do.v1.SchedulerService.ResolveConflict:input_type -> zee6do.v1.ResolveConflictRequest
-	3,  // 16: zee6do.v1.SchedulerService.GetAgendaView:output_type -> zee6do.v1.GetAgendaViewResponse
-	7,  // 17: zee6do.v1.SchedulerService.RescheduleTask:output_type -> zee6do.v1.RescheduleTaskResponse
-	9,  // 18: zee6do.v1.SchedulerService.ResolveConflict:output_type -> zee6do.v1.ResolveConflictResponse
-	16, // [16:19] is the sub-list for method output_type
-	13, // [13:16] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	10, // 0: zee6do.v1.GetAgendaViewRequest.date_range:type_name -> zee6do.v1.DateRange
+	4,  // 1: zee6do.v1.GetAgendaViewResponse.items:type_name -> zee6do.v1.AgendaItem
+	0,  // 2: zee6do.v1.AgendaItem.type:type_name -> zee6do.v1.AgendaItemType
+	11, // 3: zee6do.v1.AgendaItem.task:type_name -> zee6do.v1.Task
+	5,  // 4: zee6do.v1.AgendaItem.event:type_name -> zee6do.v1.CalendarEvent
+	12, // 5: zee6do.v1.AgendaItem.start_time:type_name -> google.protobuf.Timestamp
+	12, // 6: zee6do.v1.AgendaItem.end_time:type_name -> google.protobuf.Timestamp
+	12, // 7: zee6do.v1.CalendarEvent.start_time:type_name -> google.protobuf.Timestamp
+	12, // 8: zee6do.v1.CalendarEvent.end_time:type_name -> google.protobuf.Timestamp
+	12, // 9: zee6do.v1.RescheduleTaskRequest.new_date:type_name -> google.protobuf.Timestamp
+	11, // 10: zee6do.v1.RescheduleTaskResponse.task:type_name -> zee6do.v1.Task
+	1,  // 11: zee6do.v1.ResolveConflictRequest.resolution:type_name -> zee6do.v1.ScheduleConflictResolution
+	2,  // 12: zee6do.v1.SchedulerService.GetAgendaView:input_type -> zee6do.v1.GetAgendaViewRequest
+	6,  // 13: zee6do.v1.SchedulerService.RescheduleTask:input_type -> zee6do.v1.RescheduleTaskRequest
+	8,  // 14: zee6do.v1.SchedulerService.ResolveConflict:input_type -> zee6do.v1.ResolveConflictRequest
+	3,  // 15: zee6do.v1.SchedulerService.GetAgendaView:output_type -> zee6do.v1.GetAgendaViewResponse
+	7,  // 16: zee6do.v1.SchedulerService.RescheduleTask:output_type -> zee6do.v1.RescheduleTaskResponse
+	9,  // 17: zee6do.v1.SchedulerService.ResolveConflict:output_type -> zee6do.v1.ResolveConflictResponse
+	15, // [15:18] is the sub-list for method output_type
+	12, // [12:15] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_zee6do_v1_scheduler_service_proto_init() }
@@ -713,6 +704,7 @@ func file_zee6do_v1_scheduler_service_proto_init() {
 	if File_zee6do_v1_scheduler_service_proto != nil {
 		return
 	}
+	file_zee6do_v1_common_proto_init()
 	file_zee6do_v1_task_service_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{

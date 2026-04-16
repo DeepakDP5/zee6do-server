@@ -589,111 +589,11 @@ func (x *UserPreferences) GetNotificationSettings() *NotificationSettings {
 	return nil
 }
 
-// Notification toggle settings.
-type NotificationSettings struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Enable morning briefing notifications.
-	MorningBriefing bool `protobuf:"varint,1,opt,name=morning_briefing,json=morningBriefing,proto3" json:"morning_briefing,omitempty"`
-	// Enable task reminder notifications.
-	Reminders bool `protobuf:"varint,2,opt,name=reminders,proto3" json:"reminders,omitempty"`
-	// Enable deadline alert notifications.
-	Deadlines bool `protobuf:"varint,3,opt,name=deadlines,proto3" json:"deadlines,omitempty"`
-	// Enable connector alert notifications.
-	ConnectorAlerts bool `protobuf:"varint,4,opt,name=connector_alerts,json=connectorAlerts,proto3" json:"connector_alerts,omitempty"`
-	// Enable daily summary notifications.
-	DailySummary bool `protobuf:"varint,5,opt,name=daily_summary,json=dailySummary,proto3" json:"daily_summary,omitempty"`
-	// Quiet hours start (24h format, e.g., "22:00").
-	QuietHoursStart string `protobuf:"bytes,6,opt,name=quiet_hours_start,json=quietHoursStart,proto3" json:"quiet_hours_start,omitempty"`
-	// Quiet hours end (24h format, e.g., "07:00").
-	QuietHoursEnd string `protobuf:"bytes,7,opt,name=quiet_hours_end,json=quietHoursEnd,proto3" json:"quiet_hours_end,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *NotificationSettings) Reset() {
-	*x = NotificationSettings{}
-	mi := &file_zee6do_v1_user_service_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *NotificationSettings) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*NotificationSettings) ProtoMessage() {}
-
-func (x *NotificationSettings) ProtoReflect() protoreflect.Message {
-	mi := &file_zee6do_v1_user_service_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use NotificationSettings.ProtoReflect.Descriptor instead.
-func (*NotificationSettings) Descriptor() ([]byte, []int) {
-	return file_zee6do_v1_user_service_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *NotificationSettings) GetMorningBriefing() bool {
-	if x != nil {
-		return x.MorningBriefing
-	}
-	return false
-}
-
-func (x *NotificationSettings) GetReminders() bool {
-	if x != nil {
-		return x.Reminders
-	}
-	return false
-}
-
-func (x *NotificationSettings) GetDeadlines() bool {
-	if x != nil {
-		return x.Deadlines
-	}
-	return false
-}
-
-func (x *NotificationSettings) GetConnectorAlerts() bool {
-	if x != nil {
-		return x.ConnectorAlerts
-	}
-	return false
-}
-
-func (x *NotificationSettings) GetDailySummary() bool {
-	if x != nil {
-		return x.DailySummary
-	}
-	return false
-}
-
-func (x *NotificationSettings) GetQuietHoursStart() string {
-	if x != nil {
-		return x.QuietHoursStart
-	}
-	return ""
-}
-
-func (x *NotificationSettings) GetQuietHoursEnd() string {
-	if x != nil {
-		return x.QuietHoursEnd
-	}
-	return ""
-}
-
 var File_zee6do_v1_user_service_proto protoreflect.FileDescriptor
 
 const file_zee6do_v1_user_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1czee6do/v1/user_service.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1czee6do/v1/auth_service.proto\"\x13\n" +
+	"\x1czee6do/v1/user_service.proto\x12\tzee6do.v1\x1a\x1bbuf/validate/validate.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16zee6do/v1/common.proto\"\x13\n" +
 	"\x11GetProfileRequest\"F\n" +
 	"\x12GetProfileResponse\x120\n" +
 	"\aprofile\x18\x01 \x01(\v2\x16.zee6do.v1.UserProfileR\aprofile\"\x95\x01\n" +
@@ -723,15 +623,7 @@ const file_zee6do_v1_user_service_proto_rawDesc = "" +
 	"\x11ai_aggressiveness\x18\x02 \x01(\x05R\x10aiAggressiveness\x12(\n" +
 	"\x10work_hours_start\x18\x03 \x01(\tR\x0eworkHoursStart\x12$\n" +
 	"\x0ework_hours_end\x18\x04 \x01(\tR\fworkHoursEnd\x12T\n" +
-	"\x15notification_settings\x18\x05 \x01(\v2\x1f.zee6do.v1.NotificationSettingsR\x14notificationSettings\"\xa1\x02\n" +
-	"\x14NotificationSettings\x12)\n" +
-	"\x10morning_briefing\x18\x01 \x01(\bR\x0fmorningBriefing\x12\x1c\n" +
-	"\treminders\x18\x02 \x01(\bR\treminders\x12\x1c\n" +
-	"\tdeadlines\x18\x03 \x01(\bR\tdeadlines\x12)\n" +
-	"\x10connector_alerts\x18\x04 \x01(\bR\x0fconnectorAlerts\x12#\n" +
-	"\rdaily_summary\x18\x05 \x01(\bR\fdailySummary\x12*\n" +
-	"\x11quiet_hours_start\x18\x06 \x01(\tR\x0fquietHoursStart\x12&\n" +
-	"\x0fquiet_hours_end\x18\a \x01(\tR\rquietHoursEnd*j\n" +
+	"\x15notification_settings\x18\x05 \x01(\v2\x1f.zee6do.v1.NotificationSettingsR\x14notificationSettings*j\n" +
 	"\x0fThemePreference\x12 \n" +
 	"\x1cTHEME_PREFERENCE_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16THEME_PREFERENCE_LIGHT\x10\x01\x12\x19\n" +
@@ -757,7 +649,7 @@ func file_zee6do_v1_user_service_proto_rawDescGZIP() []byte {
 }
 
 var file_zee6do_v1_user_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_zee6do_v1_user_service_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_zee6do_v1_user_service_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_zee6do_v1_user_service_proto_goTypes = []any{
 	(ThemePreference)(0),          // 0: zee6do.v1.ThemePreference
 	(*GetProfileRequest)(nil),     // 1: zee6do.v1.GetProfileRequest
@@ -770,22 +662,22 @@ var file_zee6do_v1_user_service_proto_goTypes = []any{
 	(*DeleteAccountResponse)(nil), // 8: zee6do.v1.DeleteAccountResponse
 	(*UserProfile)(nil),           // 9: zee6do.v1.UserProfile
 	(*UserPreferences)(nil),       // 10: zee6do.v1.UserPreferences
-	(*NotificationSettings)(nil),  // 11: zee6do.v1.NotificationSettings
-	(*fieldmaskpb.FieldMask)(nil), // 12: google.protobuf.FieldMask
-	(*timestamppb.Timestamp)(nil), // 13: google.protobuf.Timestamp
-	(*User)(nil),                  // 14: zee6do.v1.User
+	(*fieldmaskpb.FieldMask)(nil), // 11: google.protobuf.FieldMask
+	(*timestamppb.Timestamp)(nil), // 12: google.protobuf.Timestamp
+	(*User)(nil),                  // 13: zee6do.v1.User
+	(*NotificationSettings)(nil),  // 14: zee6do.v1.NotificationSettings
 }
 var file_zee6do_v1_user_service_proto_depIdxs = []int32{
 	9,  // 0: zee6do.v1.GetProfileResponse.profile:type_name -> zee6do.v1.UserProfile
 	9,  // 1: zee6do.v1.UpdateProfileRequest.profile:type_name -> zee6do.v1.UserProfile
-	12, // 2: zee6do.v1.UpdateProfileRequest.update_mask:type_name -> google.protobuf.FieldMask
+	11, // 2: zee6do.v1.UpdateProfileRequest.update_mask:type_name -> google.protobuf.FieldMask
 	9,  // 3: zee6do.v1.UpdateProfileResponse.profile:type_name -> zee6do.v1.UserProfile
-	13, // 4: zee6do.v1.DeleteAccountResponse.deletion_scheduled_at:type_name -> google.protobuf.Timestamp
-	14, // 5: zee6do.v1.UserProfile.user:type_name -> zee6do.v1.User
+	12, // 4: zee6do.v1.DeleteAccountResponse.deletion_scheduled_at:type_name -> google.protobuf.Timestamp
+	13, // 5: zee6do.v1.UserProfile.user:type_name -> zee6do.v1.User
 	10, // 6: zee6do.v1.UserProfile.preferences:type_name -> zee6do.v1.UserPreferences
-	13, // 7: zee6do.v1.UserProfile.updated_at:type_name -> google.protobuf.Timestamp
+	12, // 7: zee6do.v1.UserProfile.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 8: zee6do.v1.UserPreferences.theme:type_name -> zee6do.v1.ThemePreference
-	11, // 9: zee6do.v1.UserPreferences.notification_settings:type_name -> zee6do.v1.NotificationSettings
+	14, // 9: zee6do.v1.UserPreferences.notification_settings:type_name -> zee6do.v1.NotificationSettings
 	1,  // 10: zee6do.v1.UserService.GetProfile:input_type -> zee6do.v1.GetProfileRequest
 	3,  // 11: zee6do.v1.UserService.UpdateProfile:input_type -> zee6do.v1.UpdateProfileRequest
 	5,  // 12: zee6do.v1.UserService.ExportData:input_type -> zee6do.v1.ExportDataRequest
@@ -806,14 +698,14 @@ func file_zee6do_v1_user_service_proto_init() {
 	if File_zee6do_v1_user_service_proto != nil {
 		return
 	}
-	file_zee6do_v1_auth_service_proto_init()
+	file_zee6do_v1_common_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_zee6do_v1_user_service_proto_rawDesc), len(file_zee6do_v1_user_service_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   11,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
