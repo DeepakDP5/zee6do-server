@@ -8,7 +8,6 @@ package config
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -134,10 +133,8 @@ func bindEnvVars(v *viper.Viper) {
 }
 
 func validate(cfg *Config) {
-	var missing []string
-
 	if cfg.MongoDB.URI == "" {
-		missing = append(missing, "mongodb.uri (env: ZEE6DO_MONGODB_URI)")
+		panic("config: missing required configuration: mongodb.uri (env: ZEE6DO_MONGODB_URI)")
 	}
 
 	if cfg.Server.GRPCPort <= 0 || cfg.Server.GRPCPort > 65535 {
@@ -147,9 +144,5 @@ func validate(cfg *Config) {
 	env := cfg.Server.Environment
 	if env != "development" && env != "staging" && env != "production" {
 		panic(fmt.Sprintf("config: invalid server.environment: %q (must be development, staging, or production)", env))
-	}
-
-	if len(missing) > 0 {
-		panic(fmt.Sprintf("config: missing required configuration:\n  - %s", strings.Join(missing, "\n  - ")))
 	}
 }

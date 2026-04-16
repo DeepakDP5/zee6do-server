@@ -136,6 +136,14 @@ func (r *MigrationRunner) markApplied(ctx context.Context, m Migration) error {
 
 	_, err := coll.InsertOne(ctx, record)
 	if err != nil {
+		// If another replica already recorded this migration, treat it as success.
+		// This is safe because migrations are required to be idempotent.
+		if mongo.IsDuplicateKeyError(err) {
+			r.logger.Info("migration already recorded by another instance",
+				zap.String("migration_id", m.ID),
+			)
+			return nil
+		}
 		return fmt.Errorf("insert migration record: %w", err)
 	}
 

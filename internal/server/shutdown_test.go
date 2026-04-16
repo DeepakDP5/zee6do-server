@@ -13,13 +13,11 @@ import (
 type mockComponent struct {
 	closed    bool
 	closeErr  error
-	closedAt  time.Time
 	closeFunc func(ctx context.Context) error
 }
 
 func (m *mockComponent) Close(ctx context.Context) error {
 	m.closed = true
-	m.closedAt = time.Now()
 	if m.closeFunc != nil {
 		return m.closeFunc(ctx)
 	}

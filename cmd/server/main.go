@@ -34,8 +34,8 @@ func main() {
 	app, err := InitializeApp(ctx, cfg)
 	if err != nil {
 		// Use a temporary logger since the app logger isn't available yet
-		tempLogger, _ := zap.NewProduction()
-		if tempLogger == nil {
+		tempLogger, logErr := zap.NewProduction()
+		if logErr != nil {
 			tempLogger = zap.NewNop()
 		}
 		tempLogger.Fatal("failed to initialize application", zap.Error(err))
