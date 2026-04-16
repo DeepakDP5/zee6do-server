@@ -23,17 +23,10 @@ var _ interface {
 	Close(ctx context.Context) error
 } = (*Server)(nil)
 
-// HealthIndicator is an interface for checking application health status.
-// It is satisfied by server.HealthChecker without creating a circular import.
-type HealthIndicator interface {
-	IsHealthy() bool
-}
-
 // Server wraps a gRPC server with lifecycle management.
 type Server struct {
 	grpcServer   *grpc.Server
 	healthServer *health.Server
-	healthCheck  HealthIndicator
 	logger       *zap.Logger
 	port         int
 }
@@ -41,10 +34,10 @@ type Server struct {
 // NewServer creates a new gRPC server with the interceptor stack wired in order:
 // request_id → logging → recovery → auth → validation.
 //
-// A gRPC health service is registered automatically. The health service reflects
-// the state of the provided HealthIndicator so that load balancers can detect
-// when the server is draining during graceful shutdown.
-func NewServer(cfg *config.Config, logger *zap.Logger, authCfg middleware.AuthConfig, hc HealthIndicator) *Server {
+// A gRPC health service is registered automatically. Use SetHealthStatus to
+// control its state (e.g., mark NOT_SERVING during graceful shutdown so that
+// load balancers stop routing new requests).
+func NewServer(cfg *config.Config, logger *zap.Logger, authCfg middleware.AuthConfig) *Server {
 	// Interceptor stack order matters: outermost (request_id) runs first.
 	unaryInterceptors := grpc.ChainUnaryInterceptor(
 		middleware.UnaryRequestID(),
@@ -71,7 +64,6 @@ func NewServer(cfg *config.Config, logger *zap.Logger, authCfg middleware.AuthCo
 	return &Server{
 		grpcServer:   grpcServer,
 		healthServer: healthServer,
-		healthCheck:  hc,
 		logger:       logger,
 		port:         cfg.Server.GRPCPort,
 	}
