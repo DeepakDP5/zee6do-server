@@ -1,6 +1,6 @@
 module github.com/DeepakDP5/zee6do-server
 
-go 1.23.0
+go 1.26.2
 
 toolchain go1.26.2
 
