@@ -27,7 +27,7 @@ shutdown:
 `
 	tmpDir := t.TempDir()
 	cfgPath := filepath.Join(tmpDir, "config.yaml")
-	require.NoError(t, os.WriteFile(cfgPath, []byte(yamlContent), 0o644))
+	require.NoError(t, os.WriteFile(cfgPath, []byte(yamlContent), 0o600))
 
 	cfg := Load(cfgPath)
 
@@ -54,7 +54,7 @@ logging:
 `
 	tmpDir := t.TempDir()
 	cfgPath := filepath.Join(tmpDir, "config.yaml")
-	require.NoError(t, os.WriteFile(cfgPath, []byte(yamlContent), 0o644))
+	require.NoError(t, os.WriteFile(cfgPath, []byte(yamlContent), 0o600))
 
 	t.Setenv("ZEE6DO_MONGODB_URI", "mongodb://env-host:27017")
 	t.Setenv("ZEE6DO_LOGGING_LEVEL", "error")
