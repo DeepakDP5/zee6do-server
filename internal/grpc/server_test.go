@@ -16,7 +16,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -32,7 +31,18 @@ func (t *testValidator) ValidateToken(_ context.Context, token string) (string, 
 	return "", fmt.Errorf("invalid token")
 }
 
-func newTestServer(t *testing.T, port int) (*Server, *observer.ObservedLogs) {
+// testHealthIndicator implements HealthIndicator for tests.
+type testHealthIndicator struct {
+	healthy bool
+}
+
+func (h *testHealthIndicator) IsHealthy() bool {
+	return h.healthy
+}
+
+// newTestServer creates a gRPC server with the test interceptor stack and a health
+// service registered. If skipMethods is nil, the default skip list (health check) is used.
+func newTestServer(t *testing.T, port int, skipMethods map[string]bool) (*Server, *observer.ObservedLogs) {
 	t.Helper()
 
 	core, logs := observer.New(zap.DebugLevel)
@@ -45,19 +55,20 @@ func newTestServer(t *testing.T, port int) (*Server, *observer.ObservedLogs) {
 		},
 	}
 
-	authCfg := middleware.AuthConfig{
-		Validator: &testValidator{},
-		SkipMethods: map[string]bool{
-			// Health check is unauthenticated.
+	if skipMethods == nil {
+		skipMethods = map[string]bool{
+			// Health check is unauthenticated by default.
 			"/grpc.health.v1.Health/Check": true,
-		},
+		}
 	}
 
-	srv := NewServer(cfg, logger, authCfg)
+	authCfg := middleware.AuthConfig{
+		Validator:   &testValidator{},
+		SkipMethods: skipMethods,
+	}
 
-	// Register the gRPC health service so we have an RPC to call.
-	healthServer := health.NewServer()
-	healthpb.RegisterHealthServer(srv.GRPCServer(), healthServer)
+	hc := &testHealthIndicator{healthy: true}
+	srv := NewServer(cfg, logger, authCfg, hc)
 
 	return srv, logs
 }
@@ -71,22 +82,9 @@ func getFreePort(t *testing.T) int {
 	return port
 }
 
-func TestNewServer_creates_server(t *testing.T) {
-	srv, _ := newTestServer(t, getFreePort(t))
-	assert.NotNil(t, srv)
-	assert.NotNil(t, srv.GRPCServer())
-}
-
-func TestServer_start_and_graceful_stop(t *testing.T) {
-	port := getFreePort(t)
-	srv, _ := newTestServer(t, port)
-
-	errCh := make(chan error, 1)
-	go func() {
-		errCh <- srv.Start()
-	}()
-
-	// Wait for server to be ready.
+// waitForServer polls until the server at the given port accepts TCP connections.
+func waitForServer(t *testing.T, port int) {
+	t.Helper()
 	require.Eventually(t, func() bool {
 		conn, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%d", port), 500*time.Millisecond)
 		if err != nil {
@@ -94,7 +92,25 @@ func TestServer_start_and_graceful_stop(t *testing.T) {
 		}
 		conn.Close()
 		return true
-	}, 3*time.Second, 50*time.Millisecond, "server should start listening")
+	}, 3*time.Second, 50*time.Millisecond, "server should start listening on port %d", port)
+}
+
+func TestNewServer_creates_server(t *testing.T) {
+	srv, _ := newTestServer(t, getFreePort(t), nil)
+	assert.NotNil(t, srv)
+	assert.NotNil(t, srv.GRPCServer())
+}
+
+func TestServer_start_and_graceful_stop(t *testing.T) {
+	port := getFreePort(t)
+	srv, _ := newTestServer(t, port, nil)
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- srv.Start()
+	}()
+
+	waitForServer(t, port)
 
 	// Graceful stop.
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -114,7 +130,7 @@ func TestServer_start_and_graceful_stop(t *testing.T) {
 
 func TestServer_interceptor_chain_unauthenticated_rpc(t *testing.T) {
 	port := getFreePort(t)
-	srv, logs := newTestServer(t, port)
+	srv, logs := newTestServer(t, port, nil)
 
 	go srv.Start() //nolint:errcheck
 	t.Cleanup(func() {
@@ -123,14 +139,7 @@ func TestServer_interceptor_chain_unauthenticated_rpc(t *testing.T) {
 		srv.Close(ctx) //nolint:errcheck
 	})
 
-	require.Eventually(t, func() bool {
-		conn, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%d", port), 500*time.Millisecond)
-		if err != nil {
-			return false
-		}
-		conn.Close()
-		return true
-	}, 3*time.Second, 50*time.Millisecond)
+	waitForServer(t, port)
 
 	// Connect and call the health check (which is in the skip list).
 	conn, err := grpc.NewClient(
@@ -154,24 +163,7 @@ func TestServer_interceptor_chain_authenticated_rpc(t *testing.T) {
 	port := getFreePort(t)
 
 	// Create server with no skipped methods so health check requires auth.
-	core, _ := observer.New(zap.DebugLevel)
-	logger := zap.New(core)
-
-	cfg := &config.Config{
-		Server: config.ServerConfig{
-			GRPCPort:    port,
-			Environment: "development",
-		},
-	}
-
-	authCfg := middleware.AuthConfig{
-		Validator:   &testValidator{},
-		SkipMethods: map[string]bool{},
-	}
-
-	srv := NewServer(cfg, logger, authCfg)
-	healthServer := health.NewServer()
-	healthpb.RegisterHealthServer(srv.GRPCServer(), healthServer)
+	srv, _ := newTestServer(t, port, map[string]bool{})
 
 	go srv.Start() //nolint:errcheck
 	t.Cleanup(func() {
@@ -180,14 +172,7 @@ func TestServer_interceptor_chain_authenticated_rpc(t *testing.T) {
 		srv.Close(ctx) //nolint:errcheck
 	})
 
-	require.Eventually(t, func() bool {
-		conn, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%d", port), 500*time.Millisecond)
-		if err != nil {
-			return false
-		}
-		conn.Close()
-		return true
-	}, 3*time.Second, 50*time.Millisecond)
+	waitForServer(t, port)
 
 	conn, err := grpc.NewClient(
 		fmt.Sprintf("localhost:%d", port),
@@ -225,18 +210,11 @@ func TestServer_interceptor_chain_authenticated_rpc(t *testing.T) {
 
 func TestServer_Close_timeout_forces_stop(t *testing.T) {
 	port := getFreePort(t)
-	srv, _ := newTestServer(t, port)
+	srv, _ := newTestServer(t, port, nil)
 
 	go srv.Start() //nolint:errcheck
 
-	require.Eventually(t, func() bool {
-		conn, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%d", port), 500*time.Millisecond)
-		if err != nil {
-			return false
-		}
-		conn.Close()
-		return true
-	}, 3*time.Second, 50*time.Millisecond)
+	waitForServer(t, port)
 
 	// Close with already-cancelled context to force immediate stop.
 	ctx, cancel := context.WithCancel(context.Background())
@@ -244,4 +222,40 @@ func TestServer_Close_timeout_forces_stop(t *testing.T) {
 
 	err := srv.Close(ctx)
 	assert.NoError(t, err)
+}
+
+func TestServer_health_reflects_not_serving_after_close(t *testing.T) {
+	port := getFreePort(t)
+	srv, _ := newTestServer(t, port, nil)
+
+	go srv.Start() //nolint:errcheck
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		srv.Close(ctx) //nolint:errcheck
+	})
+
+	waitForServer(t, port)
+
+	conn, err := grpc.NewClient(
+		fmt.Sprintf("localhost:%d", port),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	require.NoError(t, err)
+	defer conn.Close()
+
+	client := healthpb.NewHealthClient(conn)
+
+	// Initially healthy.
+	resp, err := client.Check(context.Background(), &healthpb.HealthCheckRequest{})
+	require.NoError(t, err)
+	assert.Equal(t, healthpb.HealthCheckResponse_SERVING, resp.Status)
+
+	// Mark as not serving.
+	srv.SetHealthStatus(false)
+
+	// Health check should now return NOT_SERVING.
+	resp, err = client.Check(context.Background(), &healthpb.HealthCheckRequest{})
+	require.NoError(t, err)
+	assert.Equal(t, healthpb.HealthCheckResponse_NOT_SERVING, resp.Status)
 }

@@ -142,27 +142,20 @@ func TestLoad_panics_on_invalid_environment(t *testing.T) {
 	}, "should panic on invalid environment")
 }
 
-func TestLoad_panics_on_missing_jwt_secret_in_staging(t *testing.T) {
-	t.Setenv("ZEE6DO_MONGODB_URI", "mongodb://localhost:27017")
-	t.Setenv("ZEE6DO_SERVER_ENVIRONMENT", "staging")
-	// Deliberately not setting ZEE6DO_JWT_SECRET
+func TestLoad_panics_on_missing_jwt_secret_in_non_dev(t *testing.T) {
+	for _, env := range []string{"staging", "production"} {
+		t.Run(env, func(t *testing.T) {
+			t.Setenv("ZEE6DO_MONGODB_URI", "mongodb://localhost:27017")
+			t.Setenv("ZEE6DO_SERVER_ENVIRONMENT", env)
+			// Deliberately not setting ZEE6DO_JWT_SECRET
 
-	assert.PanicsWithValue(t,
-		"config: missing required configuration: jwt.secret (env: ZEE6DO_JWT_SECRET) — required in staging/production",
-		func() { LoadFromEnv() },
-		"should panic when jwt.secret is missing in staging",
-	)
-}
-
-func TestLoad_panics_on_missing_jwt_secret_in_production(t *testing.T) {
-	t.Setenv("ZEE6DO_MONGODB_URI", "mongodb://localhost:27017")
-	t.Setenv("ZEE6DO_SERVER_ENVIRONMENT", "production")
-
-	assert.PanicsWithValue(t,
-		"config: missing required configuration: jwt.secret (env: ZEE6DO_JWT_SECRET) — required in staging/production",
-		func() { LoadFromEnv() },
-		"should panic when jwt.secret is missing in production",
-	)
+			assert.PanicsWithValue(t,
+				"config: missing required configuration: jwt.secret (env: ZEE6DO_JWT_SECRET) — required in staging/production",
+				func() { LoadFromEnv() },
+				"should panic when jwt.secret is missing in %s", env,
+			)
+		})
+	}
 }
 
 func TestLoad_no_panic_without_jwt_secret_in_development(t *testing.T) {

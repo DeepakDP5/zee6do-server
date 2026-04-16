@@ -89,17 +89,18 @@ func TestUnaryLogging_logs_error_completion(t *testing.T) {
 	require.Equal(t, 1, warnLogs.Len())
 }
 
-func TestUnaryLogging_completion_log_omits_downstream_user_id(t *testing.T) {
+func TestUnaryLogging_completion_log_includes_user_id_from_auth(t *testing.T) {
 	core, logs := observer.New(zap.DebugLevel)
 	baseLogger := zap.New(core)
 
 	interceptor := UnaryLogging(baseLogger)
 
-	// The auth interceptor (downstream) adds user_id to a child context,
-	// but the logging interceptor holds its own ctx — so user_id is NOT
-	// visible in the unary completion log. This is a known limitation.
+	// Simulate what the auth interceptor does: add user_id to the shared
+	// log-fields holder so the completion log includes it.
 	handler := func(ctx context.Context, req any) (any, error) {
-		_ = withUserID(ctx, "user-xyz") // child context; caller never sees it
+		if lf := logFieldsFromContext(ctx); lf != nil {
+			lf.AddField(zap.String("user_id", "user-xyz"))
+		}
 		return "ok", nil
 	}
 
@@ -110,10 +111,36 @@ func TestUnaryLogging_completion_log_omits_downstream_user_id(t *testing.T) {
 	completionLogs := logs.FilterMessage("request completed")
 	require.Equal(t, 1, completionLogs.Len())
 
-	// Verify user_id is absent from the completion log fields.
+	// Verify user_id IS present in the completion log fields.
+	entry := completionLogs.All()[0]
+	fieldMap := make(map[string]string)
+	for _, f := range entry.Context {
+		fieldMap[f.Key] = f.String
+	}
+	assert.Equal(t, "user-xyz", fieldMap["user_id"], "user_id should be in unary completion log")
+}
+
+func TestUnaryLogging_completion_log_omits_user_id_when_unauthenticated(t *testing.T) {
+	core, logs := observer.New(zap.DebugLevel)
+	baseLogger := zap.New(core)
+
+	interceptor := UnaryLogging(baseLogger)
+
+	// No auth — log-fields holder is empty.
+	handler := func(ctx context.Context, req any) (any, error) {
+		return "ok", nil
+	}
+
+	_, err := interceptor(context.Background(), nil,
+		&grpc.UnaryServerInfo{FullMethod: "/test/NoAuth"}, handler)
+	require.NoError(t, err)
+
+	completionLogs := logs.FilterMessage("request completed")
+	require.Equal(t, 1, completionLogs.Len())
+
 	entry := completionLogs.All()[0]
 	for _, f := range entry.Context {
-		assert.NotEqual(t, "user_id", f.Key, "user_id should not be in unary completion log")
+		assert.NotEqual(t, "user_id", f.Key, "user_id should not be in unauthenticated completion log")
 	}
 }
 

@@ -73,8 +73,7 @@ func TestUnaryRequestID_ignores_empty_existing_id(t *testing.T) {
 	require.NoError(t, err)
 
 	id := RequestIDFromContext(capturedCtx)
-	assert.NotEmpty(t, id)
-	assert.NotEqual(t, "", id) // Should generate a new UUID, not reuse empty string
+	assert.NotEmpty(t, id) // Should generate a new UUID, not reuse empty string
 }
 
 func TestStreamRequestID_generates_uuid(t *testing.T) {

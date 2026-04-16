@@ -23,8 +23,8 @@ func InitializeApp(ctx context.Context, cfg *config.Config) (*App, error) {
 		return nil, err
 	}
 	healthChecker := server.NewHealthChecker()
-	authConfig := provideAuthConfig()
-	grpcServer := grpcserver.NewServer(cfg, logger, authConfig)
+	authConfig := provideAuthConfig(cfg)
+	grpcServer := grpcserver.NewServer(cfg, logger, authConfig, healthChecker)
 	app := newApp(cfg, logger, mongoClient, healthChecker, grpcServer)
 	return app, nil
 }
