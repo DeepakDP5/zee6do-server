@@ -9,16 +9,18 @@ import (
 )
 
 // Sentinel errors for known, checkable conditions.
-// gRPC status mapping happens at the handler boundary only.
+// gRPC status mapping happens at the handler boundary only (see grpc.go).
 var (
-	ErrNotFound      = errors.New("not found")
-	ErrUnauthorized  = errors.New("unauthorized")
-	ErrForbidden     = errors.New("forbidden")
-	ErrConflict      = errors.New("conflict")
-	ErrAlreadyExists = errors.New("already exists")
-	ErrInvalidInput  = errors.New("invalid input")
-	ErrInternal      = errors.New("internal error")
-	ErrUnavailable   = errors.New("service unavailable")
+	ErrNotFound            = errors.New("not found")
+	ErrUnauthorized        = errors.New("unauthorized")
+	ErrForbidden           = errors.New("forbidden")
+	ErrConflict            = errors.New("conflict")
+	ErrAlreadyExists       = errors.New("already exists")
+	ErrInvalidInput        = errors.New("invalid input")
+	ErrInternal            = errors.New("internal error")
+	ErrUnavailable         = errors.New("service unavailable")
+	ErrRateLimited         = errors.New("rate limited")
+	ErrSubscriptionExpired = errors.New("subscription expired")
 )
 
 // Wrap adds context to an error using fmt.Errorf with %w.

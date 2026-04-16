@@ -10,6 +10,7 @@ import (
 	"context"
 
 	"github.com/DeepakDP5/zee6do-server/internal/database"
+	grpcserver "github.com/DeepakDP5/zee6do-server/internal/grpc"
 	"github.com/DeepakDP5/zee6do-server/internal/server"
 	"github.com/DeepakDP5/zee6do-server/pkg/config"
 )
@@ -22,6 +23,8 @@ func InitializeApp(ctx context.Context, cfg *config.Config) (*App, error) {
 		return nil, err
 	}
 	healthChecker := server.NewHealthChecker()
-	app := newApp(cfg, logger, mongoClient, healthChecker)
+	authConfig := provideAuthConfig()
+	grpcServer := grpcserver.NewServer(cfg, logger, authConfig)
+	app := newApp(cfg, logger, mongoClient, healthChecker, grpcServer)
 	return app, nil
 }
