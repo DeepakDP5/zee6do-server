@@ -7,6 +7,7 @@ import (
 	"context"
 
 	"github.com/DeepakDP5/zee6do-server/internal/database"
+	grpcserver "github.com/DeepakDP5/zee6do-server/internal/grpc"
 	"github.com/DeepakDP5/zee6do-server/internal/server"
 	"github.com/DeepakDP5/zee6do-server/pkg/config"
 	"github.com/google/wire"
@@ -17,8 +18,10 @@ import (
 func InitializeApp(ctx context.Context, cfg *config.Config) (*App, error) {
 	wire.Build(
 		provideLogger,
+		provideAuthConfig,
 		database.ProviderSet,
 		server.ProviderSet,
+		grpcserver.ProviderSet,
 		newApp,
 	)
 	return nil, nil

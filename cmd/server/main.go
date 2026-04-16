@@ -54,15 +54,26 @@ func main() {
 		app.Logger.Fatal("failed to run migrations", zap.Error(err))
 	}
 
+	// Start gRPC server in a managed goroutine.
+	grpcErrCh := make(chan error, 1)
+	go func() {
+		grpcErrCh <- app.GRPCServer.Start()
+	}()
+
 	app.Logger.Info("zee6do server ready",
 		zap.Int("grpc_port", cfg.Server.GRPCPort),
 	)
 
-	// Wait for shutdown signal
+	// Wait for shutdown signal or gRPC server error.
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	sig := <-sigCh
 
-	app.Logger.Info("received shutdown signal", zap.String("signal", sig.String()))
+	select {
+	case sig := <-sigCh:
+		app.Logger.Info("received shutdown signal", zap.String("signal", sig.String()))
+	case err := <-grpcErrCh:
+		app.Logger.Error("gRPC server exited with error", zap.Error(err))
+	}
+
 	app.ShutdownManager.Shutdown()
 }

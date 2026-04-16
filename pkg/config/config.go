@@ -15,10 +15,12 @@ import (
 
 // Config holds all application configuration.
 type Config struct {
-	Server   ServerConfig   `mapstructure:"server"`
-	MongoDB  MongoDBConfig  `mapstructure:"mongodb"`
-	Logging  LoggingConfig  `mapstructure:"logging"`
-	Shutdown ShutdownConfig `mapstructure:"shutdown"`
+	Server       ServerConfig       `mapstructure:"server"`
+	MongoDB      MongoDBConfig      `mapstructure:"mongodb"`
+	Logging      LoggingConfig      `mapstructure:"logging"`
+	Shutdown     ShutdownConfig     `mapstructure:"shutdown"`
+	JWT          JWTConfig          `mapstructure:"jwt"`
+	RateLimiting RateLimitingConfig `mapstructure:"rate_limiting"`
 }
 
 // ServerConfig holds server-related configuration.
@@ -57,6 +59,24 @@ type ShutdownConfig struct {
 	GracePeriod time.Duration `mapstructure:"grace_period"`
 	// DrainInterval is the time to wait for load balancer drain.
 	DrainInterval time.Duration `mapstructure:"drain_interval"`
+}
+
+// JWTConfig holds JWT authentication configuration.
+type JWTConfig struct {
+	// Secret is the signing key for JWT tokens.
+	Secret string `mapstructure:"secret"`
+	// AccessTTL is the lifetime of access tokens.
+	AccessTTL time.Duration `mapstructure:"access_ttl"`
+	// RefreshTTL is the lifetime of refresh tokens.
+	RefreshTTL time.Duration `mapstructure:"refresh_ttl"`
+}
+
+// RateLimitingConfig holds rate limiting configuration (stub for future use).
+type RateLimitingConfig struct {
+	// Enabled controls whether rate limiting is active.
+	Enabled bool `mapstructure:"enabled"`
+	// DefaultRPS is the default requests-per-second limit per client.
+	DefaultRPS int `mapstructure:"default_rps"`
 }
 
 // Load reads configuration from the given YAML file path and environment variables.
@@ -105,13 +125,19 @@ func setDefaults(v *viper.Viper) {
 
 	v.SetDefault("shutdown.grace_period", 30*time.Second)
 	v.SetDefault("shutdown.drain_interval", 10*time.Second)
+
+	v.SetDefault("jwt.access_ttl", 15*time.Minute)
+	v.SetDefault("jwt.refresh_ttl", 30*24*time.Hour) // 30 days
+
+	v.SetDefault("rate_limiting.enabled", false)
+	v.SetDefault("rate_limiting.default_rps", 100)
 }
 
 // bindEnvVars explicitly binds each config key to its environment variable.
 // This avoids issues with Viper's AutomaticEnv and nested key replacers.
 // Format: ZEE6DO_<SECTION>_<KEY>
 func bindEnvVars(v *viper.Viper) {
-	bindings := map[string]string{
+	bindings := map[string]string{ //nolint:gosec // G101 false positive: these are env var names, not credentials
 		"server.grpc_port":                  "ZEE6DO_SERVER_GRPC_PORT",
 		"server.environment":                "ZEE6DO_SERVER_ENVIRONMENT",
 		"mongodb.uri":                       "ZEE6DO_MONGODB_URI",
@@ -123,6 +149,11 @@ func bindEnvVars(v *viper.Viper) {
 		"logging.level":                     "ZEE6DO_LOGGING_LEVEL",
 		"shutdown.grace_period":             "ZEE6DO_SHUTDOWN_GRACE_PERIOD",
 		"shutdown.drain_interval":           "ZEE6DO_SHUTDOWN_DRAIN_INTERVAL",
+		"jwt.secret":                        "ZEE6DO_JWT_SECRET",
+		"jwt.access_ttl":                    "ZEE6DO_JWT_ACCESS_TTL",
+		"jwt.refresh_ttl":                   "ZEE6DO_JWT_REFRESH_TTL",
+		"rate_limiting.enabled":             "ZEE6DO_RATE_LIMITING_ENABLED",
+		"rate_limiting.default_rps":         "ZEE6DO_RATE_LIMITING_DEFAULT_RPS",
 	}
 
 	for key, env := range bindings {
@@ -144,5 +175,10 @@ func validate(cfg *Config) {
 	env := cfg.Server.Environment
 	if env != "development" && env != "staging" && env != "production" {
 		panic(fmt.Sprintf("config: invalid server.environment: %q (must be development, staging, or production)", env))
+	}
+
+	// JWT secret is required in non-development environments.
+	if env != "development" && cfg.JWT.Secret == "" {
+		panic("config: missing required configuration: jwt.secret (env: ZEE6DO_JWT_SECRET) — required in staging/production")
 	}
 }
