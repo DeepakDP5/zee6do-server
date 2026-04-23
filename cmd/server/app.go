@@ -1,13 +1,13 @@
 package main
 
 import (
-	"context"
-	"fmt"
-
+	zee6dov1 "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1"
+	"github.com/DeepakDP5/zee6do-server/internal/auth"
 	"github.com/DeepakDP5/zee6do-server/internal/database"
 	grpcserver "github.com/DeepakDP5/zee6do-server/internal/grpc"
 	"github.com/DeepakDP5/zee6do-server/internal/server"
 	"github.com/DeepakDP5/zee6do-server/pkg/config"
+	"github.com/DeepakDP5/zee6do-server/pkg/crypto"
 	"github.com/DeepakDP5/zee6do-server/pkg/logging"
 	"github.com/DeepakDP5/zee6do-server/pkg/middleware"
 	"go.uber.org/zap"
@@ -21,6 +21,7 @@ type App struct {
 	HealthChecker   *server.HealthChecker
 	ShutdownManager *server.ShutdownManager
 	GRPCServer      *grpcserver.Server
+	AuthService     *auth.Handler
 }
 
 // newApp creates the App. This is called by the Wire-generated injector.
@@ -30,6 +31,7 @@ func newApp(
 	mongoClient *database.MongoClient,
 	healthChecker *server.HealthChecker,
 	grpcServer *grpcserver.Server,
+	authHandler *auth.Handler,
 ) *App {
 	shutdownMgr := server.NewShutdownManager(
 		logger,
@@ -43,6 +45,9 @@ func newApp(
 	shutdownMgr.Register("grpc", grpcServer)
 	shutdownMgr.Register("mongodb", mongoClient)
 
+	// Register auth service on the gRPC server.
+	zee6dov1.RegisterAuthServiceServer(grpcServer.GRPCServer(), authHandler)
+
 	return &App{
 		Config:          cfg,
 		Logger:          logger,
@@ -50,6 +55,7 @@ func newApp(
 		HealthChecker:   healthChecker,
 		ShutdownManager: shutdownMgr,
 		GRPCServer:      grpcServer,
+		AuthService:     authHandler,
 	}
 }
 
@@ -62,21 +68,14 @@ func provideLogger(cfg *config.Config) *zap.Logger {
 }
 
 // provideAuthConfig builds the auth interceptor configuration.
-// In development, a placeholder validator accepts any token. In staging/production
-// the placeholder is rejected at startup to fail closed — a real validator must be
-// wired before deploying outside development.
-func provideAuthConfig(cfg *config.Config) middleware.AuthConfig {
-	var validator middleware.JWTValidator
-	if cfg.Server.Environment == "development" {
-		validator = &placeholderValidator{}
-	} else {
-		// Fail closed: no real validator means no authenticated RPCs can succeed.
-		// This will be replaced when the auth module (Task 3) is implemented.
-		validator = &rejectAllValidator{}
-	}
-
+//
+// The real JWT validator from the crypto package is always used. In
+// development it still validates signatures, but with a dev-generated secret
+// (callers can mint tokens locally). In staging/production the configured
+// secret is required (enforced by config.validate).
+func provideAuthConfig(jwtSvc *crypto.JWTService) middleware.AuthConfig {
 	return middleware.AuthConfig{
-		Validator: validator,
+		Validator: jwtSvc,
 		SkipMethods: map[string]bool{
 			// gRPC health protocol — used by load balancers, Kubernetes probes, and
 			// monitoring systems. These must never require authentication.
@@ -94,25 +93,4 @@ func provideAuthConfig(cfg *config.Config) middleware.AuthConfig {
 	}
 }
 
-// rejectAllValidator rejects all tokens. Used in staging/production when no
-// real JWT validator has been wired yet, ensuring the system fails closed.
-type rejectAllValidator struct{}
 
-func (r *rejectAllValidator) ValidateToken(_ context.Context, _ string) (string, error) {
-	return "", fmt.Errorf("no JWT validator configured for this environment")
-}
-
-// placeholderValidator is a temporary JWT validator used during bootstrap
-// before the auth module is implemented. It accepts any token and returns
-// "placeholder-user" as the user ID.
-//
-// NOTE: The auth interceptor already guards against empty tokens before
-// calling ValidateToken, so no empty-token check is needed here.
-//
-// WARNING: This validator is development-only. It must be replaced with
-// real JWT validation before staging/production use. See Review item #1.
-type placeholderValidator struct{}
-
-func (p *placeholderValidator) ValidateToken(_ context.Context, _ string) (string, error) {
-	return "placeholder-user", nil
-}

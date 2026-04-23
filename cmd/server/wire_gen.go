@@ -9,10 +9,13 @@ package main
 import (
 	"context"
 
+	"github.com/DeepakDP5/zee6do-server/internal/auth"
 	"github.com/DeepakDP5/zee6do-server/internal/database"
 	grpcserver "github.com/DeepakDP5/zee6do-server/internal/grpc"
 	"github.com/DeepakDP5/zee6do-server/internal/server"
+	"github.com/DeepakDP5/zee6do-server/internal/users"
 	"github.com/DeepakDP5/zee6do-server/pkg/config"
+	"github.com/DeepakDP5/zee6do-server/pkg/crypto"
 )
 
 // InitializeApp wires all dependencies and returns the fully assembled App.
@@ -23,8 +26,20 @@ func InitializeApp(ctx context.Context, cfg *config.Config) (*App, error) {
 		return nil, err
 	}
 	healthChecker := server.NewHealthChecker()
-	authConfig := provideAuthConfig(cfg)
+
+	// Auth module dependency graph:
+	//   mongo.Database -> user + auth repositories -> auth.Service -> auth.Handler
+	// JWTService is both consumed by auth.Service AND bound as the
+	// middleware.JWTValidator for the gRPC auth interceptor.
+	db := mongoClient.Database()
+	userRepo := users.NewMongoRepository(db)
+	authRepo := auth.NewMongoRepository(db)
+	jwtService := crypto.NewJWTService(cfg)
+	authService := auth.NewService(authRepo, userRepo, jwtService, cfg, logger)
+	authHandler := auth.NewHandler(authService)
+
+	authConfig := provideAuthConfig(jwtService)
 	grpcServer := grpcserver.NewServer(cfg, logger, authConfig)
-	app := newApp(cfg, logger, mongoClient, healthChecker, grpcServer)
+	app := newApp(cfg, logger, mongoClient, healthChecker, grpcServer, authHandler)
 	return app, nil
 }

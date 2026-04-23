@@ -24,6 +24,11 @@ func Register(runner *database.MigrationRunner) {
 		Description: "Create initial indexes for core collections",
 		Up:          migrateCreateInitialIndexes,
 	})
+	runner.Register(database.Migration{
+		ID:          "002_auth_indexes",
+		Description: "Create indexes for auth module (sessions, otp_records, users)",
+		Up:          migration002AuthIndexes,
+	})
 }
 
 func migrateCreateInitialIndexes(ctx context.Context, db *mongo.Database) error {

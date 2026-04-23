@@ -36,6 +36,13 @@ func withUserID(ctx context.Context, userID string) context.Context {
 	return context.WithValue(ctx, userIDKey{}, userID)
 }
 
+// ContextWithUserID attaches the given user ID to the context using the same
+// key as UserIDFromContext. This is primarily intended for tests that need
+// to simulate an authenticated call without running the interceptor.
+func ContextWithUserID(ctx context.Context, userID string) context.Context {
+	return withUserID(ctx, userID)
+}
+
 // AuthConfig configures the auth interceptor.
 type AuthConfig struct {
 	// Validator performs JWT token validation.
