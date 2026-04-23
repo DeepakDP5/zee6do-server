@@ -13,9 +13,8 @@ import (
 
 type userIDKey struct{}
 
-// JWTValidator is the interface for JWT token validation. The auth module
-// provides the real implementation; during bootstrap a placeholder that
-// accepts any well-formed token can be used.
+// JWTValidator is the interface for JWT token validation. The auth module's
+// JWT service provides the implementation used in production and tests.
 type JWTValidator interface {
 	// ValidateToken validates the given JWT token string and returns the user ID
 	// embedded in its claims. Returns an error if the token is invalid or expired.
@@ -31,8 +30,11 @@ func UserIDFromContext(ctx context.Context) string {
 	return ""
 }
 
-// withUserID returns a context with the user ID set.
-func withUserID(ctx context.Context, userID string) context.Context {
+// ContextWithUserID attaches the given user ID to the context using the same
+// key as UserIDFromContext. Called by the auth interceptor after successful
+// validation, and also exported for tests that need to simulate an
+// authenticated call without running the interceptor.
+func ContextWithUserID(ctx context.Context, userID string) context.Context {
 	return context.WithValue(ctx, userIDKey{}, userID)
 }
 
@@ -118,7 +120,7 @@ func authenticate(ctx context.Context, validator JWTValidator) (context.Context,
 		return ctx, status.Error(codes.Unauthenticated, "invalid token")
 	}
 
-	ctx = withUserID(ctx, userID)
+	ctx = ContextWithUserID(ctx, userID)
 
 	// Add user_id to the shared log-fields holder so the logging interceptor's
 	// completion log includes the authenticated user, even though it holds

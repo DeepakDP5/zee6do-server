@@ -39,7 +39,7 @@ func TestUserIDFromContext_empty(t *testing.T) {
 }
 
 func TestUserIDFromContext_present(t *testing.T) {
-	ctx := withUserID(context.Background(), "user-abc")
+	ctx := ContextWithUserID(context.Background(), "user-abc")
 	assert.Equal(t, "user-abc", UserIDFromContext(ctx))
 }
 

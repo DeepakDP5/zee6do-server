@@ -24,13 +24,21 @@ func Register(runner *database.MigrationRunner) {
 		Description: "Create initial indexes for core collections",
 		Up:          migrateCreateInitialIndexes,
 	})
+	runner.Register(database.Migration{
+		ID:          "002_auth_indexes",
+		Description: "Create indexes for auth module (sessions, otp_records, users)",
+		Up:          migration002AuthIndexes,
+	})
 }
 
 func migrateCreateInitialIndexes(ctx context.Context, db *mongo.Database) error {
-	// Users collection: unique index on user_id
+	// Users collection: unique + sparse index on user_id. Sparse is required
+	// because the auth module writes user documents without a user_id field
+	// (it uses _id as the identifier); a non-sparse unique index would
+	// collide on missing values and block every signup after the first.
 	_, err := db.Collection("users").Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys:    bson.D{{Key: "user_id", Value: 1}},
-		Options: options.Index().SetUnique(true),
+		Options: options.Index().SetUnique(true).SetSparse(true),
 	})
 	if err != nil {
 		return fmt.Errorf("create users.user_id unique index: %w", err)
