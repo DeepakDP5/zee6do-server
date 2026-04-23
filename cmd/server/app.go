@@ -69,10 +69,10 @@ func provideLogger(cfg *config.Config) *zap.Logger {
 
 // provideAuthConfig builds the auth interceptor configuration.
 //
-// The real JWT validator from the crypto package is always used. In
-// development it still validates signatures, but with a dev-generated secret
-// (callers can mint tokens locally). In staging/production the configured
-// secret is required (enforced by config.validate).
+// The JWT validator from the crypto package performs real signature
+// validation in every environment. In development it uses a dev-generated
+// secret (callers can mint tokens locally); in staging/production the
+// configured secret is required (enforced by config.validate).
 func provideAuthConfig(jwtSvc *crypto.JWTService) middleware.AuthConfig {
 	return middleware.AuthConfig{
 		Validator: jwtSvc,

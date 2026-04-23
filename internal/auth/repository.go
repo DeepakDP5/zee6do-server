@@ -11,6 +11,7 @@ type Repository interface {
 	MarkOTPVerified(ctx context.Context, id string) error
 
 	CreateSession(ctx context.Context, session *Session) error
+	GetSession(ctx context.Context, sessionID string) (*Session, error)
 	GetSessionsByUser(ctx context.Context, userID string) ([]*Session, error)
 	GetSessionByRefreshToken(ctx context.Context, tokenHash string) (*Session, error)
 	RevokeSession(ctx context.Context, sessionID string) error

@@ -84,9 +84,12 @@ func TestHandler_RevokeDevice_NotOwner_MapsToPermissionDenied(t *testing.T) {
 	h, repo, _ := newTestHandler(t)
 	// Simulate authenticated user in context.
 	ctx := middleware.ContextWithUserID(context.Background(), "user-1")
-	repo.On("GetSessionsByUser", mock.Anything, "user-1").Return([]*Session{}, nil)
+	sid := bson.NewObjectID()
+	// Unknown session -> service returns Forbidden so we don't leak existence.
+	repo.On("GetSession", mock.Anything, sid.Hex()).
+		Return(nil, apperrors.Wrap(apperrors.ErrNotFound, "missing"))
 
-	_, err := h.RevokeDevice(ctx, &zee6dov1.RevokeDeviceRequest{DeviceId: bson.NewObjectID().Hex()})
+	_, err := h.RevokeDevice(ctx, &zee6dov1.RevokeDeviceRequest{DeviceId: sid.Hex()})
 	require.Error(t, err)
 	st, ok := status.FromError(err)
 	require.True(t, ok)

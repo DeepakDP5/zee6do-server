@@ -44,6 +44,11 @@ func (m *mockRepo) CreateSession(ctx context.Context, s *Session) error {
 	}
 	return args.Error(0)
 }
+func (m *mockRepo) GetSession(ctx context.Context, sessionID string) (*Session, error) {
+	args := m.Called(ctx, sessionID)
+	s, _ := args.Get(0).(*Session)
+	return s, args.Error(1)
+}
 func (m *mockRepo) GetSessionsByUser(ctx context.Context, userID string) ([]*Session, error) {
 	args := m.Called(ctx, userID)
 	s, _ := args.Get(0).([]*Session)
@@ -209,6 +214,34 @@ func TestVerifyOTP_AlreadyVerified(t *testing.T) {
 	assert.ErrorIs(t, err, apperrors.ErrInvalidInput)
 }
 
+// When two concurrent VerifyOTP calls race, the atomic MarkOTPVerified in
+// the repo rejects the loser (MatchedCount == 0 -> ErrNotFound). The
+// service must surface that error instead of minting tokens.
+func TestVerifyOTP_Race_LoserGetsErrorFromMarkVerified(t *testing.T) {
+	svc, repo, _ := newTestService(t)
+	code := "123456"
+	hash, err := crypto.HashOTP(code)
+	require.NoError(t, err)
+
+	otpID := bson.NewObjectID()
+	rec := &OTPRecord{
+		ID:          otpID,
+		PhoneNumber: "+1555",
+		CodeHash:    hash,
+		MaxAttempts: otpMaxAttempts,
+		ExpiresAt:   time.Now().Add(time.Minute),
+	}
+	repo.On("GetOTP", mock.Anything, otpID.Hex()).Return(rec, nil)
+	// Simulate the atomic update finding no document because another
+	// request already flipped verified=true.
+	repo.On("MarkOTPVerified", mock.Anything, otpID.Hex()).
+		Return(apperrors.Wrap(apperrors.ErrNotFound, "race lost"))
+
+	_, err = svc.VerifyOTP(context.Background(), otpID.Hex(), code, "dev")
+	require.Error(t, err)
+	assert.ErrorIs(t, err, apperrors.ErrNotFound)
+}
+
 func TestVerifyOTP_MaxAttempts_RateLimited(t *testing.T) {
 	svc, repo, _ := newTestService(t)
 	otpID := bson.NewObjectID()
@@ -316,7 +349,7 @@ func TestListDevices_Unauthenticated(t *testing.T) {
 func TestRevokeDevice_HappyPath(t *testing.T) {
 	svc, repo, _ := newTestService(t)
 	sid := bson.NewObjectID()
-	repo.On("GetSessionsByUser", mock.Anything, "u1").Return([]*Session{{ID: sid, UserID: "u1"}}, nil)
+	repo.On("GetSession", mock.Anything, sid.Hex()).Return(&Session{ID: sid, UserID: "u1"}, nil)
 	repo.On("RevokeSession", mock.Anything, sid.Hex()).Return(nil)
 	require.NoError(t, svc.RevokeDevice(context.Background(), "u1", sid.Hex()))
 }
@@ -324,7 +357,19 @@ func TestRevokeDevice_HappyPath(t *testing.T) {
 func TestRevokeDevice_NotOwner(t *testing.T) {
 	svc, repo, _ := newTestService(t)
 	sid := bson.NewObjectID()
-	repo.On("GetSessionsByUser", mock.Anything, "u1").Return([]*Session{}, nil)
+	// Session exists but belongs to a different user.
+	repo.On("GetSession", mock.Anything, sid.Hex()).Return(&Session{ID: sid, UserID: "other"}, nil)
+	err := svc.RevokeDevice(context.Background(), "u1", sid.Hex())
+	assert.ErrorIs(t, err, apperrors.ErrForbidden)
+}
+
+func TestRevokeDevice_MissingSession_MapsToForbidden(t *testing.T) {
+	// Unknown session IDs must not leak existence; we return Forbidden
+	// just like the "wrong owner" path.
+	svc, repo, _ := newTestService(t)
+	sid := bson.NewObjectID()
+	repo.On("GetSession", mock.Anything, sid.Hex()).
+		Return(nil, apperrors.Wrap(apperrors.ErrNotFound, "missing"))
 	err := svc.RevokeDevice(context.Background(), "u1", sid.Hex())
 	assert.ErrorIs(t, err, apperrors.ErrForbidden)
 }
@@ -339,7 +384,7 @@ func TestLogout_AllSessionsWhenNoID(t *testing.T) {
 func TestLogout_SpecificSession(t *testing.T) {
 	svc, repo, _ := newTestService(t)
 	sid := bson.NewObjectID()
-	repo.On("GetSessionsByUser", mock.Anything, "u1").Return([]*Session{{ID: sid, UserID: "u1"}}, nil)
+	repo.On("GetSession", mock.Anything, sid.Hex()).Return(&Session{ID: sid, UserID: "u1"}, nil)
 	repo.On("RevokeSession", mock.Anything, sid.Hex()).Return(nil)
 	require.NoError(t, svc.Logout(context.Background(), "u1", sid.Hex()))
 }

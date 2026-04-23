@@ -10,7 +10,9 @@ import (
 	"time"
 
 	zee6dov1 "github.com/DeepakDP5/zee6do-server/gen/zee6do/v1"
+	"github.com/DeepakDP5/zee6do-server/internal/database"
 	"github.com/DeepakDP5/zee6do-server/internal/users"
+	"github.com/DeepakDP5/zee6do-server/migrations"
 	"github.com/DeepakDP5/zee6do-server/pkg/config"
 	"github.com/DeepakDP5/zee6do-server/pkg/crypto"
 	"github.com/stretchr/testify/require"
@@ -49,6 +51,15 @@ func TestAuthIntegration(t *testing.T) {
 	}}
 	logger := zap.NewNop()
 	jwtSvc := crypto.NewJWTService(cfg)
+
+	// Apply all registered migrations so the users/sessions/otp_records
+	// collections have the indexes the auth flow relies on (TTL on OTP
+	// and sessions, unique+sparse on users.phone, etc.). Without this
+	// the tests would happily write documents that violate the
+	// production index contract, hiding regressions.
+	runner := database.NewMigrationRunner(db, logger)
+	migrations.Register(runner)
+	require.NoError(t, runner.Run(ctx))
 
 	// Wire real repositories.
 	authRepo := NewMongoRepository(db)

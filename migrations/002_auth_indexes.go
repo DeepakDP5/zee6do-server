@@ -21,7 +21,8 @@ import (
 //   - phone_number: for per-phone lookup / future rate limiting.
 //
 // users collection:
-//   - phone: unique index so at most one account per phone number.
+//   - phone: unique + sparse so at most one account per phone number but
+//     multiple social-only (phone-less) users can coexist.
 //   - email: unique + sparse so empty emails don't collide.
 func migration002AuthIndexes(ctx context.Context, db *mongo.Database) error {
 	sessions := db.Collection("sessions")
@@ -53,7 +54,7 @@ func migration002AuthIndexes(ctx context.Context, db *mongo.Database) error {
 	userIdx := []mongo.IndexModel{
 		{
 			Keys:    bson.D{{Key: "phone", Value: 1}},
-			Options: options.Index().SetUnique(true),
+			Options: options.Index().SetUnique(true).SetSparse(true),
 		},
 		{
 			Keys:    bson.D{{Key: "email", Value: 1}},

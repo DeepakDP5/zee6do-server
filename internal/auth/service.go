@@ -2,8 +2,6 @@ package auth
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -129,14 +127,7 @@ func (s *Service) VerifyOTP(ctx context.Context, otpID, code, deviceFingerprint 
 	}
 
 	if !crypto.VerifyOTP(code, rec.CodeHash) {
-		if err := s.repo.IncrementOTPAttempts(ctx, otpID); err != nil {
-			s.logger.Warn("failed to increment otp attempts", zap.Error(err))
-		}
-		// After incrementing, check whether we just crossed the threshold.
-		if rec.Attempts+1 >= rec.MaxAttempts {
-			return nil, apperrors.Wrap(apperrors.ErrRateLimited, "auth.VerifyOTP: max attempts")
-		}
-		return nil, apperrors.Wrap(apperrors.ErrInvalidInput, "auth.VerifyOTP: invalid code")
+		return nil, s.recordFailedOTPAttempt(ctx, rec)
 	}
 
 	if err := s.repo.MarkOTPVerified(ctx, otpID); err != nil {
@@ -201,20 +192,8 @@ func (s *Service) RefreshToken(ctx context.Context, refreshToken, deviceFingerpr
 		return nil, apperrors.Wrap(apperrors.ErrUnauthorized, fmt.Sprintf("auth.RefreshToken: %v", err))
 	}
 
-	// Device fingerprint binding:
-	// - The raw fingerprint presented now must equal the one stored on the
-	//   session (constant-time compare via a hash-based check).
-	// - And the hash carried in the refresh token claims must match the
-	//   hash of the session's fingerprint.
-	storedHash := crypto.HashFingerprint(session.DeviceFingerprint)
-	if !crypto.CompareFingerprint(deviceFingerprint, storedHash) {
-		return nil, apperrors.Wrap(apperrors.ErrUnauthorized, "auth.RefreshToken: device mismatch")
-	}
-	if claims.DeviceFingerprintHash != storedHash {
-		return nil, apperrors.Wrap(apperrors.ErrUnauthorized, "auth.RefreshToken: token/device mismatch")
-	}
-	if session.UserID != claims.UserID {
-		return nil, apperrors.Wrap(apperrors.ErrUnauthorized, "auth.RefreshToken: token/session user mismatch")
+	if err := s.verifyDeviceBinding(session, claims, deviceFingerprint); err != nil {
+		return nil, err
 	}
 
 	// Revoke the old session so the refresh token can only be used once.
@@ -239,6 +218,9 @@ func (s *Service) ListDevices(ctx context.Context, userID string) ([]*Session, e
 }
 
 // RevokeDevice revokes a single session belonging to the calling user.
+// Non-owners (including lookups against an unknown session ID) receive
+// ErrForbidden so they cannot distinguish between "not yours" and
+// "doesn't exist".
 func (s *Service) RevokeDevice(ctx context.Context, userID, sessionID string) error {
 	if userID == "" {
 		return apperrors.Wrap(apperrors.ErrUnauthorized, "auth.RevokeDevice: unauthenticated")
@@ -247,21 +229,14 @@ func (s *Service) RevokeDevice(ctx context.Context, userID, sessionID string) er
 		return apperrors.Wrap(apperrors.ErrInvalidInput, "auth.RevokeDevice: session id required")
 	}
 
-	// Ownership check: load all user sessions and verify the target belongs
-	// to the caller. Keeps the repo interface simple; real paging/volume
-	// concerns can be addressed when a GetSession(id) accessor is needed.
-	sessions, err := s.repo.GetSessionsByUser(ctx, userID)
+	sess, err := s.repo.GetSession(ctx, sessionID)
 	if err != nil {
+		if errors.Is(err, apperrors.ErrNotFound) {
+			return apperrors.Wrap(apperrors.ErrForbidden, "auth.RevokeDevice: not owner")
+		}
 		return fmt.Errorf("auth.RevokeDevice: %w", err)
 	}
-	found := false
-	for _, sess := range sessions {
-		if sess.ID.Hex() == sessionID {
-			found = true
-			break
-		}
-	}
-	if !found {
+	if sess.UserID != userID {
 		return apperrors.Wrap(apperrors.ErrForbidden, "auth.RevokeDevice: not owner")
 	}
 
@@ -334,12 +309,48 @@ func (s *Service) issueTokenPair(ctx context.Context, user *users.User, deviceFi
 // storage/lookup. We never store the raw token; SHA-256 is sufficient because
 // the token itself has high entropy.
 func hashRefreshToken(token string) string {
-	sum := sha256.Sum256([]byte(token))
-	return hex.EncodeToString(sum[:])
+	return crypto.HashFingerprint(token)
 }
 
 // hashTokenForStub produces a stable fake social-provider subject for beta.
 func hashTokenForStub(token string) string {
-	sum := sha256.Sum256([]byte("social-stub:" + token))
-	return hex.EncodeToString(sum[:])
+	return crypto.HashFingerprint("social-stub:" + token)
+}
+
+// recordFailedOTPAttempt increments the OTP attempts counter and returns
+// the appropriate domain error: ErrRateLimited once the attempt crosses
+// the per-record cap, ErrInvalidInput otherwise. A failure to persist the
+// increment is logged but does not mask the user-facing error (we still
+// reject the submitted code).
+func (s *Service) recordFailedOTPAttempt(ctx context.Context, rec *OTPRecord) error {
+	if err := s.repo.IncrementOTPAttempts(ctx, rec.ID.Hex()); err != nil {
+		s.logger.Warn("failed to increment otp attempts", zap.Error(err))
+	}
+	if rec.Attempts+1 >= rec.MaxAttempts {
+		return apperrors.Wrap(apperrors.ErrRateLimited, "auth.VerifyOTP: max attempts")
+	}
+	return apperrors.Wrap(apperrors.ErrInvalidInput, "auth.VerifyOTP: invalid code")
+}
+
+// verifyDeviceBinding checks that the refresh token and the presented
+// raw device fingerprint all agree with what was recorded on the stored
+// session. All three must match:
+//   - incoming raw fingerprint hashes to the session's fingerprint hash;
+//   - the claim's device fingerprint hash matches the session's hash;
+//   - the claim's user matches the session's user.
+//
+// Hashes are compared with a constant-time equality check to avoid
+// leaking byte-by-byte differences through timing.
+func (s *Service) verifyDeviceBinding(session *Session, claims *crypto.Claims, rawFingerprint string) error {
+	storedHash := crypto.HashFingerprint(session.DeviceFingerprint)
+	if !crypto.CompareFingerprint(rawFingerprint, storedHash) {
+		return apperrors.Wrap(apperrors.ErrUnauthorized, "auth.RefreshToken: device mismatch")
+	}
+	if claims.DeviceFingerprintHash != storedHash {
+		return apperrors.Wrap(apperrors.ErrUnauthorized, "auth.RefreshToken: token/device mismatch")
+	}
+	if session.UserID != claims.UserID {
+		return apperrors.Wrap(apperrors.ErrUnauthorized, "auth.RefreshToken: token/session user mismatch")
+	}
+	return nil
 }

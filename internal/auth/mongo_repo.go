@@ -83,13 +83,21 @@ func (r *MongoRepository) IncrementOTPAttempts(ctx context.Context, id string) e
 	return nil
 }
 
-// MarkOTPVerified flips the verified flag to true.
+// MarkOTPVerified atomically flips the verified flag to true for an OTP
+// record that has not yet been verified. The filter includes
+// `verified: false` so concurrent callers cannot both succeed; the second
+// racer sees MatchedCount == 0 and gets ErrNotFound, which the service
+// translates into an "already verified" failure. This preserves the
+// single-use guarantee even under concurrent VerifyOTP requests.
 func (r *MongoRepository) MarkOTPVerified(ctx context.Context, id string) error {
 	oid, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return apperrors.Wrap(apperrors.ErrNotFound, "auth.MarkOTPVerified: invalid id")
 	}
-	res, err := r.otp.UpdateOne(ctx, bson.M{"_id": oid}, bson.M{"$set": bson.M{"verified": true}})
+	res, err := r.otp.UpdateOne(ctx,
+		bson.M{"_id": oid, "verified": false},
+		bson.M{"$set": bson.M{"verified": true}},
+	)
 	if err != nil {
 		return fmt.Errorf("auth.MarkOTPVerified: %w", err)
 	}
@@ -116,6 +124,24 @@ func (r *MongoRepository) CreateSession(ctx context.Context, session *Session) e
 		return fmt.Errorf("auth.CreateSession: %w", err)
 	}
 	return nil
+}
+
+// GetSession fetches a single session by its hex ObjectID. Returns
+// ErrNotFound when the ID is malformed or no document matches. Revoked
+// sessions are returned as-is so callers can decide how to handle them.
+func (r *MongoRepository) GetSession(ctx context.Context, sessionID string) (*Session, error) {
+	oid, err := bson.ObjectIDFromHex(sessionID)
+	if err != nil {
+		return nil, apperrors.Wrap(apperrors.ErrNotFound, "auth.GetSession: invalid id")
+	}
+	var s Session
+	if err := r.sessions.FindOne(ctx, bson.M{"_id": oid}).Decode(&s); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, apperrors.Wrap(apperrors.ErrNotFound, "auth.GetSession")
+		}
+		return nil, fmt.Errorf("auth.GetSession: %w", err)
+	}
+	return &s, nil
 }
 
 // GetSessionsByUser returns all non-revoked sessions for the given user,
